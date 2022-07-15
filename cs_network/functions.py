@@ -2,7 +2,6 @@
 import socket
 import sys
 import string
-import rsa
 import json
 import time
 import pickle
@@ -10,6 +9,7 @@ import os
 from xml.etree.ElementTree import Element, tostring
 from typing import Union
 from ast import literal_eval
+import rsa
 from os.path import dirname, join, abspath, exists, isdir
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
 from encryption import EXAMPLE_PUB_KEY, load_pub_key
@@ -82,7 +82,9 @@ def network_config(retry: int = 3, default_port: int = 50541) -> tuple:
             continue
 
 
-def data_config(retry: int = 3, example_key: rsa.PrivateKey = EXAMPLE_PUB_KEY, output_filelength: int = 97) -> dict:
+def data_config(retry: int = 3,
+                example_key: rsa.PrivateKey = EXAMPLE_PUB_KEY,
+                output_filelength: int = 97) -> dict:
     """
     Get the user's configuration data.
 
