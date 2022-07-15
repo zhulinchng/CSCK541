@@ -40,7 +40,7 @@ def dict_to_xml_string(dict_val: dict, root_tag: str = 'root') -> str:
                 child.text = str(value)
             root.append(child)
         return root
-    return tostring(dict_to_xml(dict_val))
+    return tostring(dict_to_xml(dict_val), encoding='utf-8')
 
 
 def network_config(retry: int = 3, default_port: int = 50541) -> tuple:
@@ -240,7 +240,7 @@ def data_input(config_dict: dict, max_bytes: int = 1024, retry: int = 3) -> Unio
         elif serial_method == 2:
             size = len(json.dumps(data))
         elif serial_method == 3:
-            size = len(dict_to_xml_string(data).encode('utf-8'))
+            size = len(dict_to_xml_string(data))
         else:
             size = len(data.encode('utf-8'))
         compare = max_bytes-size
