@@ -28,7 +28,10 @@ def initialize_client(host: str, port: int) -> socket.socket:
         sys.exit(1)
 
 
-def input_data(start_from=1, retry: int = 3, max_bytes: int = 1024, output_filelength: int = 97) -> tuple:
+def input_data(start_from=1,
+               retry: int = 3,
+               max_bytes: int = 1024,
+               output_filelength: int = 97) -> tuple:
     """
     Input the data.
 
@@ -48,7 +51,7 @@ def input_data(start_from=1, retry: int = 3, max_bytes: int = 1024, output_filel
     if start_from <= 2:
         for _ in range(retry):
             data_dictionary = data_input(
-                config_dict=config,
+                config_dict=configuration_dict,
                 max_bytes=max_bytes,
                 retry=retry)
             if validate_empty_value(data_dictionary):
@@ -77,11 +80,11 @@ def process_data(config_dict: dict, data: Union[str, dict]) -> tuple(dict, bytes
             print(
                 f"Data written successfully to {output_dict.pop('txtfilepath')}")
 
-    if output_dict['serialize'] == 1 or config['encrypt'] == 1:
+    if output_dict['serialize'] == 1 or output_dict['encrypt'] == 1:
         output_dict['data'] = pickle.dumps(output_dict['data'])
-    elif output_dict['serialize'] == 2 and config['encrypt'] == 2:
+    elif output_dict['serialize'] == 2 and output_dict['encrypt'] == 2:
         output_dict['data'] = json.dumps(output_dict['data']).encode('utf-8')
-    elif output_dict['serialize'] == 3 and config['encrypt'] == 2:
+    elif output_dict['serialize'] == 3 and output_dict['encrypt'] == 2:
         output_dict['data'] = dict_to_xml_string(
             output_dict['data']).encode('utf-8')
 
