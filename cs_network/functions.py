@@ -238,7 +238,7 @@ def data_input(config_dict: dict, max_bytes: int = 1024, retry: int = 3) -> Unio
         if serial_method == 1:
             size = len(pickle.dumps(data))
         elif serial_method == 2:
-            size = len(json.dumps(data))
+            size = len(json.dumps(data).encode('utf-8'))
         elif serial_method == 3:
             size = len(dict_to_xml_string(data))
         else:
