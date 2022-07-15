@@ -60,7 +60,7 @@ def input_data(start_from=1,
     return configuration_dict, data_dictionary
 
 
-def process_data(config_dict: dict, data: Union[str, dict]) -> tuple(dict, bytes):
+def process_data(config_dict: dict, data: Union[str, dict]) -> tuple:
     """
     Process the data.
 
@@ -81,12 +81,11 @@ def process_data(config_dict: dict, data: Union[str, dict]) -> tuple(dict, bytes
                 f"Data written successfully to {output_dict.pop('txtfilepath')}")
 
     if output_dict['serialize'] == 1 or output_dict['encrypt'] == 1:
-        output_dict['data'] = pickle.dumps(output_dict['data'])
+        output_dict['data'] = pickle.dumps(data)
     elif output_dict['serialize'] == 2 and output_dict['encrypt'] == 2:
-        output_dict['data'] = json.dumps(output_dict['data']).encode('utf-8')
+        output_dict['data'] = json.dumps(data).encode('utf-8')
     elif output_dict['serialize'] == 3 and output_dict['encrypt'] == 2:
-        output_dict['data'] = dict_to_xml_string(
-            output_dict['data']).encode('utf-8')
+        output_dict['data'] = dict_to_xml_string(data)
 
     data_only = output_dict.pop('data')
     return output_dict, data_only
@@ -129,8 +128,6 @@ def send_with_retry(sock: socket.socket,
             print(
                 f"Connection Error, retrying in 1 second.\nRetry {i+1} of {retry}")
             time.sleep(sleep)
-    print("Connection reset.\nPlease try again.\nCheck the host and port.")
-    sys.exit(1)
 
 
 def start_client() -> None:
