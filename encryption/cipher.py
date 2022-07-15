@@ -25,7 +25,7 @@ def decrypt(msg: str, private_key: rsa.PrivateKey) -> str:
     :param private_key: The private key to decrypt with.
     :return: The decrypted message.
     """
-    return rsa.decrypt(msg, private_key).decode('utf8')
+    return rsa.decrypt(msg, private_key)
 
 if __name__ == "__main__":
     TEST = "Hello World!"
