@@ -9,10 +9,11 @@ import os
 from xml.etree.ElementTree import Element, tostring
 from typing import Union
 from ast import literal_eval
-import rsa
 from os.path import dirname, join, abspath, exists, isdir
+import rsa
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
 from encryption import EXAMPLE_PUB_KEY, load_pub_key
+
 
 def dict_to_xml_string(dict_val: dict, root_tag: str = 'root') -> str:
     """
@@ -55,10 +56,11 @@ def network_config(retry: int = 3, default_port: int = 50541) -> tuple:
     print("------------Enter network configuration------------")
     for _ in range(retry):
         try:
+            default = socket.gethostname()
             host = input(
-                "Enter the IPv4 host, or press enter to use default hostname: ")
+                f"Enter the IPv4 host, or press enter to use {default}: ")
             if host == '':
-                host = socket.gethostname()
+                host = default
                 print("Using default hostname:", host)
             socket.gethostbyname(host)
             break
@@ -82,9 +84,27 @@ def network_config(retry: int = 3, default_port: int = 50541) -> tuple:
             continue
 
 
+def validation(config_input: str, input_tup: tuple, err_msg: str = "Invalid input") -> bool:
+    """
+    Validate the input.
+
+    :param config_input: The input to validate.
+    :param input_tup: The valid input range.
+    :param err_msg: The error message to print.
+    :return: True if the input is valid, False otherwise.
+    """
+    try:
+        int(config_input)
+        if int(config_input) not in input_tup:
+            raise ValueError
+        return True
+    except ValueError:
+        print(err_msg)
+        return False
+
+
 def data_config(retry: int = 3,
-                example_key: rsa.PrivateKey = EXAMPLE_PUB_KEY,
-                output_filelength: int = 97) -> dict:
+                example_key: rsa.PublicKey = EXAMPLE_PUB_KEY) -> dict:
     """
     Get the user's configuration data.
 
@@ -99,16 +119,6 @@ def data_config(retry: int = 3,
     time_txt = time.strftime("%Y%m%d_%H%M%S", time.localtime())
     config = {}
 
-    def validation(config_input: str, input_tup: tuple, err_msg: str = "Invalid input") -> bool:
-        try:
-            int(config_input)
-            if int(config_input) not in input_tup:
-                raise ValueError
-            return True
-        except ValueError:
-            print(err_msg)
-            return False
-
     for _ in range(retry):
         config['type'] = input(
             "Send a dictionary (1), or a text (2): ").strip()
@@ -121,13 +131,16 @@ def data_config(retry: int = 3,
         for _ in range(retry):
             try:
                 config['txtfilepath'] = input(
-                    "Enter the folder path save the text file: ").strip()
+                    "Enter folder path save the file, or press Enter to use current directory "
+                ).strip()
                 if config['txtfilepath'] == '':
                     config['txtfilepath'] = os.getcwd()
                     print("Using current directory: " + config['txtfilepath'])
                 if not isdir(config['txtfilepath']):
                     raise FileNotFoundError
-                txtfilename = input("Enter the text file name: ").strip()
+                txtfilename = input(
+                    f"Enter the text file name, or press Enter to use output_{time_txt}.txt: "
+                ).strip()
                 if not all(char in valid_chars for char in txtfilename):
                     print("Invalid file name.\nEnter a valid file name.")
                     raise ValueError
@@ -193,38 +206,69 @@ def data_config(retry: int = 3,
     else:
         config['serialize'] = None
 
+    return config
+
+
+def server_config(retry: int = 3) -> dict:
+    """
+    Get the server's configuration data.
+
+    :retry: The number of times to retry the input.
+    :output_filelength: The length of the output file name.
+    :return: The server's configuration data.
+    """
+    serv_config = {}
+    print("------------Enter server configuration------------")
+    valid_chars = string.ascii_letters + string.digits + '_.-'
+    error_message = "Invalid input.\nEnter a valid number in "
+    time_txt = time.strftime("%Y%m%d_%H%M%S", time.localtime())
+
     for _ in range(retry):
-        config['output_method'] = input(
+        serv_config['output_method'] = input(
             "Output to file (1) or console (2): ").strip()
         valid_range = (1, 2)
-        if validation(config['output_method'], valid_range, error_message + str(valid_range)):
-            config['output_method'] = int(config['output_method'])
+        if validation(serv_config['output_method'], valid_range, error_message + str(valid_range)):
+            serv_config['output_method'] = int(serv_config['output_method'])
             break
 
-    if config['output_method'] == 1:
+    if serv_config['output_method'] == 1:
         for _ in range(retry):
             try:
-                config['output_filename'] = input(
-                    "Enter the output file name: ").strip()
-                if config['output_filename'] == '':
-                    config['output_filename'] = f'output_{time_txt}'
-                    print("Using default filename: " +
-                          config['output_filename'])
-                if not all(char in valid_chars for char in config['output_filename']):
-                    print(
-                        "Invalid file name.\nEnter a valid file name using only letters, numbers, and underscores.")
+                serv_config['filepath'] = input(
+                    "Enter folder path save the file, or press Enter to use current directory: "
+                ).strip()
+                if serv_config['filepath'] == '':
+                    serv_config['filepath'] = os.getcwd()
+                    print("Using current directory: " +
+                          serv_config['filepath'])
+                if not isdir(serv_config['filepath']):
+                    raise FileNotFoundError
+                filename = input(
+                    f"Enter the file name, or press Enter to use output_{time_txt}: "
+                ).strip()
+                if not all(char in valid_chars for char in filename):
+                    print("Invalid file name.\nEnter a valid file name.")
                     raise ValueError
-                if len(config['output_filename']) > output_filelength:
-                    print(
-                        f"Filename exceed length by {len(config['output_filename']) - output_filelength} characters.\nEnter a shorter filename.")
+                if filename == '':
+                    filename = f'output_{time_txt}'
+                    print("Using default filename: " + filename)
+                elif '.' in filename:
+                    filename = f'{filename.split(".")[0]}'
+                serv_config['filepath'] = join(
+                    serv_config['filepath'], filename)
+                if len(serv_config['filepath']) > 255:
+                    print("Filename too long.\nEnter a shorter filename.")
                     raise ValueError
                 break
+            except FileNotFoundError:
+                print("Invalid folder path.\nEnter a valid folder path.")
+                continue
             except ValueError:
                 continue
     else:
-        config['output_filename'] = None
+        serv_config['filepath'] = None
 
-    return config
+    return serv_config
 
 
 def data_input(config_dict: dict, max_bytes: int = 1024, retry: int = 3) -> Union[str, dict]:
@@ -279,18 +323,21 @@ def data_input(config_dict: dict, max_bytes: int = 1024, retry: int = 3) -> Unio
     return data
 
 
-def validate_empty_value(input_dict: dict) -> bool:
+def validate_empty_value(input_dict: Union[str, dict]) -> bool:
     """
     Validate that a value in the dictionary is not empty.
 
     :input_dict: The dictionary to validate.
     :return: True if all values in the dictionary is not empty, False otherwise.
     """
-    for key, value in input_dict.items():
-        if value == '':
-            print(f"{key} is empty. Enter a value for {key}.\nPlease try again.")
-            return False
-    return True
+    if isinstance(input_dict, str):
+        return input_dict != ''
+    else:
+        for key, value in input_dict.items():
+            if value == '':
+                print(f"{key} is empty. Enter a value for {key}.\nPlease try again.")
+                return False
+        return True
 
 
 def continue_input() -> int:
@@ -303,12 +350,15 @@ def continue_input() -> int:
         answer = input("Do you want to continue? (y/n): ")
         if answer.lower() == 'y':
             where = input(
-                "Continue from:\n(1) Input configuration\n(2) Input data\n(3) Exit")
+                "Continue from:\n(1) Input configuration and data\n(2) Input data only\n(3) Exit\nSelect: ").strip()
             if where == '1':
+                print("------------Starting from Input Config------------")
                 return 1
             elif where == '2':
+                print("------------Starting from Input Data------------")
                 return 2
             elif where == '3':
+                print("------------Exiting------------")
                 return 0
             else:
                 print("Invalid input.")
