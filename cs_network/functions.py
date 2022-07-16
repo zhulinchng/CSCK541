@@ -229,7 +229,7 @@ def data_config(retry: int = 3,
             if validation(config['serialize'], valid_range, error_message + str(valid_range)):
                 config['serialize'] = int(config['serialize'])
                 break
-    elif config['encrypt'] == 1:
+    elif config['type'] == 1 and config['encrypt'] == 1:
         print("Serialization method will default to binary for encrypted dictionary.")
         config['serialize'] = 1
     else:

@@ -4,8 +4,9 @@ import sys
 import json
 import time
 import pickle
-import rsa
+from ast import literal_eval
 import xml.dom.minidom
+import rsa
 from os.path import dirname, join, abspath, exists
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
 from encryption import decrypt, EXAMPLE_PRIV_KEY, load_priv_key
@@ -134,6 +135,19 @@ def get_private_key(retry: int = 3,
     return priv_key
 
 
+def print_dict(input_dict: dict) -> None:
+    """
+    Print a dictionary.
+
+    :param d: The dictionary to print.
+    :return: None.
+    """
+    print("------------Start Dictionary Text Output------------")
+    for key, value in input_dict.items():
+        print(f"{key}: {value}")
+    print("------------End Dictionary Text Output------------")
+
+
 def print_to_terminal(text: str) -> None:
     """
     Print to the terminal.
@@ -181,35 +195,38 @@ def process_recv_data(config_dict: dict,
             status = 'DATA_ERROR: DecryptionError'
 
     if server_configuration['output_method'] == 2:
-        print_to_terminal(recv_data)
+        if config_dict['serialize'] == 1 and config_dict['type'] == 1:
+            if isinstance(recv_data, str):
+                recv_data = literal_eval(recv_data)
+            print_dict(recv_data)
+        else:
+            print_to_terminal(recv_data)
     elif server_configuration['output_method'] == 1:
         time_txt = time.strftime("%Y%m%d_%H%M%S", time.localtime())
         filepath = server_configuration['filepath']+'_'+time_txt
         try:
-            if config_dict['serialize'] == 1 and config_dict['encrypt'] == 2:
+            if config_dict['serialize'] == 1 and config_dict['type'] == 1:
                 filepath = filepath+'.p'
                 with open(filepath, 'wb') as pkl_file:
                     pickle.dump(recv_data, pkl_file)
                 print_to_terminal(f"Data written to {filepath}")
-            elif config_dict['serialize'] == 2:
+            elif config_dict['serialize'] == 2 and config_dict['type'] == 1:
                 filepath = filepath+'.json'
                 with open(filepath, 'w', encoding='utf-8') as json_file:
                     json.dump(recv_data, json_file, indent=4)
                 print_to_terminal(f"Data written to {filepath}")
-            elif config_dict['serialize'] == 3:
+            elif config_dict['serialize'] == 3 and config_dict['type'] == 1:
                 filepath = filepath+'.xml'
                 recv_data = xml.dom.minidom.parseString(recv_data).toprettyxml(
                     indent='\t', encoding='utf-8').decode('utf-8').strip()
                 with open(filepath, 'w', encoding='utf-8') as xml_file:
                     xml_file.write(recv_data)
                 print_to_terminal(f"Data written to {filepath}")
-            elif config_dict['type'] == 2 or config_dict['encrypt'] == 1:
+            elif config_dict['type'] == 2:
                 filepath = filepath+'.txt'
                 with open(filepath, 'w', encoding='utf-8') as txt_file:
                     txt_file.write(str(recv_data))
                 print_to_terminal(f"Data written to {filepath}")
-            elif config_dict['serialize'] is None:
-                pass
             else:
                 print("Invalid serialize type.")
                 status = 'DATA_ERROR: Invalid serialize type.'
