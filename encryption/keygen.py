@@ -6,7 +6,7 @@ def generate_keys(keysize: int) -> tuple:
     """
     Generate a key for encryption.
 
-    :param size: The size of the key.
+    :param keysize: The size of the key.
     :return: A tuple containing the public and private keys.
     """
     return rsa.newkeys(keysize)

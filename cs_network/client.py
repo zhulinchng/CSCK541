@@ -33,7 +33,7 @@ def initialize_client(host: str, port: int) -> socket.socket:
 
 def input_data(configuration_dict: dict,
                data_dictionary: dict,
-               start_from=1,
+               start_from: int = 1,
                retry: int = 3,
                max_bytes: int = 245,
                example_p_key: rsa.PublicKey = EXAMPLE_PUB_KEY,
@@ -41,9 +41,11 @@ def input_data(configuration_dict: dict,
     """
     Input the data.
 
+    :param configuration_dict: The user's configuration data.
+    :param data_dictionary: The user's data.
+    :param start_from: The starting point of the data.
     :param retry: The number of times to retry the input.
     :param max_bytes: The maximum number of bytes for data.
-    :param output_filelength: The maximum length of the output file name.
     :return: The tuple of dictionaries.
     """
     if start_from <= 1:
@@ -144,16 +146,18 @@ def send_with_retry(sock: socket.socket,
             time.sleep(sleep)
 
 
-def start_client() -> None:
+def start_client(timeout: int = 600) -> None:
     """
     Main function.
 
+    :param timeout: The timeout for the client.
     :return: None.
     """
     # get network configuration data
     host, port = network_config()
     # connect to the server
     sock = initialize_client(host, port)
+    sock.settimeout(timeout) # set timeout
     start = 1
     config = {}
     data_dict = {}
@@ -168,12 +172,14 @@ def start_client() -> None:
                 config, data_dict, start_from=start, example_p_key=EXAMPLE_PUB_KEY)
         print("---------Processing Data---------")
         send_config, encoded_data = process_data(config, data_dict)
+        print("Processing complete.")
         print("---------Sending Config---------")
         send_with_retry(sock, json.dumps(send_config).encode('utf-8'))
         res = wait_for_response(sock, timeout=100)
         if res.decode('utf-8') != "CONFIG_OK":
             print(f"Configuration failed: {res.decode('utf-8')}")
             sys.exit(1)
+        print(res.decode('utf-8'))
         print("---------Sending Data---------")
         send_with_retry(sock, encoded_data)
         res = wait_for_response(sock, timeout=100)

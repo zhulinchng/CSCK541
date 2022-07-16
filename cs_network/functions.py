@@ -364,6 +364,8 @@ def data_input(config_dict: dict, max_bytes: int = 1024, retry: int = 3) -> Unio
                         continue
                 if validate_xml_value(xvalue):
                     data[key] = xvalue
+                    scheck, size = size_check(data)
+                    print(f'Dictionary: {data} \nSize: {size} bytes')
                     continue
                 else:
                     print("Invalid value for XML.")
@@ -381,6 +383,7 @@ def data_input(config_dict: dict, max_bytes: int = 1024, retry: int = 3) -> Unio
                     continue
             else:
                 data[key] = dvalue
+        scheck, size = size_check(data)
         print(f'Dictionary: {data} \nSize: {size} bytes')
     return data
 
