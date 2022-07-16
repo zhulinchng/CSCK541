@@ -3,15 +3,13 @@ import socket
 import sys
 import json
 import time
-import os
 import pickle
 import rsa
-from xml.etree.ElementTree import fromstring, ElementTree
+import xml.dom.minidom
 from os.path import dirname, join, abspath, exists
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
-from cs_network import network_config, server_config
 from encryption import decrypt, EXAMPLE_PRIV_KEY, load_priv_key
-
+from cs_network import network_config, server_config
 
 def initialize_server(host: str, port: int, backlog: int = 1) -> socket.socket:
     """
@@ -46,10 +44,10 @@ def receive_config(connection: socket.socket, address: str = '', retry: int = 3)
     """
     # receive the data
     for i in range(retry):
-        if address != '':
-            print('Connected by', address)
         try:
             recv_data = connection.recv(1024)
+            if address != '':
+                print('Connected by', address)
         except socket.error:
             print("Connection Error on receiving config.")
         if not recv_data:
@@ -162,7 +160,6 @@ def process_recv_data(config_dict: dict,
     # decrypt the data
 
     status = 'DATA_OK'
-
     if config_dict['type'] == 1:
         if config_dict['serialize'] == 1:
             recv_data = pickle.loads(recv_data)
@@ -173,12 +170,11 @@ def process_recv_data(config_dict: dict,
         else:
             print("Invalid serialize type.")
             status = 'DATA_ERROR: Invalid serialize type.'
-    elif config_dict['type'] == 2:
+    elif config_dict['type'] == 2 and config_dict['encrypt'] == 2:
         recv_data = recv_data.decode('utf-8')
 
     if config_dict['encrypt'] == 1:
         try:
-            print(recv_data)
             recv_data = decrypt(recv_data, priv_key).decode('utf-8')
         except rsa.pkcs1.DecryptionError:
             print("Decryption Error: Could not decrypt the data.")
@@ -187,22 +183,33 @@ def process_recv_data(config_dict: dict,
     if server_configuration['output_method'] == 2:
         print_to_terminal(recv_data)
     elif server_configuration['output_method'] == 1:
+        time_txt = time.strftime("%Y%m%d_%H%M%S", time.localtime())
+        filepath = server_configuration['filepath']+'_'+time_txt
         try:
-            if config_dict['serialize'] == 1:
-                filepath = server_configuration['filepath']+'.p'
+            if config_dict['serialize'] == 1 and config_dict['encrypt'] == 2:
+                filepath = filepath+'.p'
                 with open(filepath, 'wb') as pkl_file:
                     pickle.dump(recv_data, pkl_file)
                 print_to_terminal(f"Data written to {filepath}")
             elif config_dict['serialize'] == 2:
-                filepath = server_configuration['filepath']+'.json'
+                filepath = filepath+'.json'
                 with open(filepath, 'w', encoding='utf-8') as json_file:
-                    json.dump(recv_data, json_file)
+                    json.dump(recv_data, json_file, indent=4)
                 print_to_terminal(f"Data written to {filepath}")
             elif config_dict['serialize'] == 3:
-                filepath = server_configuration['filepath']+'.xml'
-                ElementTree(fromstring(recv_data)).write("temp.xml")
-                os.replace("temp.xml", filepath)
+                filepath = filepath+'.xml'
+                recv_data = xml.dom.minidom.parseString(recv_data).toprettyxml(
+                    indent='\t', encoding='utf-8').decode('utf-8').strip()
+                with open(filepath, 'w', encoding='utf-8') as xml_file:
+                    xml_file.write(recv_data)
                 print_to_terminal(f"Data written to {filepath}")
+            elif config_dict['type'] == 2 or config_dict['encrypt'] == 1:
+                filepath = filepath+'.txt'
+                with open(filepath, 'w', encoding='utf-8') as txt_file:
+                    txt_file.write(str(recv_data))
+                print_to_terminal(f"Data written to {filepath}")
+            elif config_dict['serialize'] is None:
+                pass
             else:
                 print("Invalid serialize type.")
                 status = 'DATA_ERROR: Invalid serialize type.'
@@ -222,6 +229,7 @@ def start_server() -> None:
     host, port = network_config()
     sock = initialize_server(host, port)
     serv_conf = server_config()
+    print("------------Start Connection------------")
     conn, addr = sock.accept()
     with conn:
         cont = 1
