@@ -6,6 +6,8 @@ import json
 import time
 import pickle
 import os
+from xml.parsers.expat import ExpatError
+from xml.dom.minidom import parseString
 from xml.etree.ElementTree import Element, tostring
 from typing import Union
 from ast import literal_eval
@@ -13,7 +15,6 @@ from os.path import dirname, join, abspath, exists, isdir
 import rsa
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
 from encryption import EXAMPLE_PUB_KEY, load_pub_key
-
 
 def dict_to_xml_string(dict_val: dict, root_tag: str = 'root') -> str:
     """
@@ -42,6 +43,34 @@ def dict_to_xml_string(dict_val: dict, root_tag: str = 'root') -> str:
             root.append(child)
         return root
     return tostring(dict_to_xml(dict_val), encoding='utf-8')
+
+
+def validate_xml_key(xml_str: str) -> bool:
+    """
+    Validate an XML string.
+
+    :param xml_str: The XML string to validate.
+    :return: True if the XML string is valid, False otherwise.
+    """
+    try:
+        parseString(f'<{xml_str}>a</{xml_str}>')
+        return True
+    except ExpatError:
+        return False
+
+
+def validate_xml_value(xml_str: str) -> bool:
+    """
+    Validate that the XML string is valid.
+
+    :param xml_str: The XML string to validate.
+    :return: True if the XML string is valid, False otherwise.
+    """
+    try:
+        parseString(f'<a>{xml_str}</a>')
+        return True
+    except ExpatError:
+        return False
 
 
 def network_config(retry: int = 3, default_port: int = 50541) -> tuple:
@@ -131,7 +160,7 @@ def data_config(retry: int = 3,
         for _ in range(retry):
             try:
                 config['txtfilepath'] = input(
-                    "Enter folder path save the file, or press Enter to use current directory "
+                    "Enter folder path save the file, or press Enter to use current directory: "
                 ).strip()
                 if config['txtfilepath'] == '':
                     config['txtfilepath'] = os.getcwd()
@@ -139,21 +168,21 @@ def data_config(retry: int = 3,
                 if not isdir(config['txtfilepath']):
                     raise FileNotFoundError
                 txtfilename = input(
-                    f"Enter the text file name, or press Enter to use output_{time_txt}.txt: "
+                    "Enter the filename prefix, or press Enter to use 'client_output': "
                 ).strip()
                 if not all(char in valid_chars for char in txtfilename):
                     print("Invalid file name.\nEnter a valid file name.")
                     raise ValueError
                 if txtfilename == '':
-                    txtfilename = f'output_{time_txt}.txt'
-                    print("Using default filename: " + txtfilename)
-                elif '.' not in txtfilename:
-                    txtfilename = f'{txtfilename}.txt'
-                config['txtfilepath'] = join(
-                    config['txtfilepath'], txtfilename)
-                if len(config['txtfilepath']) > 255:
+                    txtfilename = 'client_output'
+                    print("Using filename prefix: " + txtfilename)
+                elif '.' in txtfilename:
+                    txtfilename = txtfilename.split('.')[0]
+                if len(join(config['txtfilepath'], f'{txtfilename}_{time_txt}.txt')) > 255:
                     print("Filename too long.\nEnter a shorter filename.")
                     raise ValueError
+                config['txtfilepath'] = join(
+                    config['txtfilepath'], txtfilename)
                 break
             except FileNotFoundError:
                 print("Invalid folder path.\nEnter a valid folder path.")
@@ -244,21 +273,21 @@ def server_config(retry: int = 3) -> dict:
                 if not isdir(serv_config['filepath']):
                     raise FileNotFoundError
                 filename = input(
-                    f"Enter the file name, or press Enter to use output_{time_txt}: "
+                    "Enter the filename prefix, or press Enter to use 'server_output': "
                 ).strip()
                 if not all(char in valid_chars for char in filename):
                     print("Invalid file name.\nEnter a valid file name.")
                     raise ValueError
                 if filename == '':
-                    filename = f'output_{time_txt}'
-                    print("Using default filename: " + filename)
+                    filename = 'server_output'
+                    print("Using filename prefix: " + filename)
                 elif '.' in filename:
-                    filename = f'{filename.split(".")[0]}'
-                serv_config['filepath'] = join(
-                    serv_config['filepath'], filename)
-                if len(serv_config['filepath']) > 255:
+                    filename = filename.split(".")[0]
+                if len(join(serv_config['filepath'], f'{filename}_{time_txt}.txt')) > 255:
                     print("Filename too long.\nEnter a shorter filename.")
                     raise ValueError
+                serv_config['filepath'] = join(
+                    serv_config['filepath'], filename)
                 break
             except FileNotFoundError:
                 print("Invalid folder path.\nEnter a valid folder path.")
@@ -314,11 +343,37 @@ def data_input(config_dict: dict, max_bytes: int = 1024, retry: int = 3) -> Unio
         key = input("Enter the key, or press Enter to finish: ").strip()
         if key == '':
             break
-        data[key] = input("Enter the value: ").strip()
+        if config_dict['serialize'] == 3:
+            if not validate_xml_key(key):
+                print("Invalid key for XML.")
+                continue
+        dvalue = input("Enter the value: ").strip()
         try:
-            data[key] = literal_eval(data[key])
+            xvalue = literal_eval(dvalue)
+            if config_dict['serialize'] == 3:
+                if isinstance(xvalue, dict):
+                    xml_string = dict_to_xml_string(xvalue)
+                    try:
+                        parseString(xml_string)
+                    except ExpatError:
+                        print("Invalid value for XML.")
+                        continue
+                if validate_xml_value(xvalue):
+                    data[key] = xvalue
+                    continue
+                else:
+                    print("Invalid value for XML.")
+                    continue
+            data[key] = xvalue
         except (ValueError, SyntaxError):
-            pass
+            if config_dict['serialize'] == 3:
+                if validate_xml_value(dvalue):
+                    data[key] = dvalue
+                else:
+                    print("Invalid value for XML.")
+                    continue
+            else:
+                data[key] = dvalue
         print(f'Dictionary: {data} \nSize: {size} bytes')
     return data
 
@@ -349,8 +404,12 @@ def continue_input() -> int:
     while True:
         answer = input("Do you want to continue? (y/n): ")
         if answer.lower() == 'y':
-            where = input(
-                "Continue from:\n(1) Input configuration and data\n(2) Input data only\n(3) Exit\nSelect: ").strip()
+            where = input("""
+Continue from:
+(1) Input configuration and data
+(2) Input data only
+(3) Exit
+Select: """).strip()
             if where == '1':
                 print("------------Starting from Input Config------------")
                 return 1

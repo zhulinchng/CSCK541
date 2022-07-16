@@ -4,14 +4,14 @@ import json
 import sys
 import pickle
 import time
+import base64
 import rsa
 from typing import Union
 from os.path import dirname, join, abspath
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
-from cs_network import validate_empty_value, continue_input, dict_to_xml_string
-from cs_network import data_config, network_config, data_input
 from encryption import encrypt, EXAMPLE_PUB_KEY
-
+from cs_network import data_config, network_config, data_input
+from cs_network import validate_empty_value, continue_input, dict_to_xml_string
 
 def initialize_client(host: str, port: int) -> socket.socket:
     """
@@ -33,10 +33,10 @@ def initialize_client(host: str, port: int) -> socket.socket:
 
 def input_data(configuration_dict: dict,
                data_dictionary: dict,
-               start_from = 1,
+               start_from=1,
                retry: int = 3,
                max_bytes: int = 245,
-               example_p_key : rsa.PublicKey = EXAMPLE_PUB_KEY,
+               example_p_key: rsa.PublicKey = EXAMPLE_PUB_KEY,
                ) -> tuple:
     """
     Input the data.
@@ -55,9 +55,9 @@ def input_data(configuration_dict: dict,
 
     if start_from <= 2:
         data_dictionary = data_input(
-                config_dict=configuration_dict,
-                max_bytes=max_bytes,
-                retry=retry)
+            config_dict=configuration_dict,
+            max_bytes=max_bytes,
+            retry=retry)
 
     return configuration_dict, data_dictionary
 
@@ -72,18 +72,25 @@ def process_data(config_dict: dict, data: Union[str, dict]) -> tuple:
     """
 
     output_dict = config_dict.copy()
+    time_txt = time.strftime("%Y%m%d_%H%M%S", time.localtime())
 
     if output_dict['encrypt'] == 1:
         output_dict['data'] = encrypt(str(data), output_dict.pop('public_key'))
 
-    if output_dict['type'] == 2:
-        with open(output_dict['txtfilepath'], 'w', encoding='utf-8') as file:
-            file.write(str(data))
-            print(
-                f"Data written successfully to {output_dict.pop('txtfilepath')}")
-        output_dict['data'] = data.encode('utf-8')
+    if output_dict['type'] == 2 and output_dict['encrypt'] == 1:
+        textdata = base64.b64encode(output_dict['data']).decode('utf-8')
+    elif output_dict['type'] == 2 and output_dict['encrypt'] == 2:
+        textdata = data
 
-    if output_dict['serialize'] == 1:
+    if output_dict['type'] == 2:
+        with open(f"{output_dict['txtfilepath']}_{time_txt}.txt", 'w', encoding='utf-8') as file:
+            file.write(str(textdata))
+            print(
+                f"Data written successfully to {output_dict.pop('txtfilepath')}_{time_txt}.txt")
+        if output_dict['encrypt'] == 2:
+            output_dict['data'] = textdata.encode('utf-8')
+
+    if output_dict['serialize'] == 1 and output_dict['type'] == 1:
         if output_dict['encrypt'] == 1:
             output_dict['data'] = pickle.dumps(output_dict['data'])
         else:
@@ -94,7 +101,7 @@ def process_data(config_dict: dict, data: Union[str, dict]) -> tuple:
         output_dict['data'] = dict_to_xml_string(data)
 
     data_only = output_dict.pop('data')
-    
+
     return output_dict, data_only
 
 

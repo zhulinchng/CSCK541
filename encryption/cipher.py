@@ -1,7 +1,7 @@
 """Functions to encrypt and decrypt messages with a public and private key."""
 import rsa
 
-def encrypt(message: str, public_key: rsa.PublicKey) -> str:
+def encrypt(message: str, public_key: rsa.PublicKey) -> bytes:
     """
     Encrypt a message with a public key.
 
@@ -14,7 +14,7 @@ def encrypt(message: str, public_key: rsa.PublicKey) -> str:
     """
     return rsa.encrypt(message.encode('utf8'), public_key)
 
-def decrypt(msg: str, private_key: rsa.PrivateKey) -> str:
+def decrypt(data_bytes: bytes, private_key: rsa.PrivateKey) -> str:
     """
     Decrypt a message with a private key.
 
@@ -25,7 +25,7 @@ def decrypt(msg: str, private_key: rsa.PrivateKey) -> str:
     :param private_key: The private key to decrypt with.
     :return: The decrypted message.
     """
-    return rsa.decrypt(msg, private_key)
+    return rsa.decrypt(data_bytes, private_key)
 
 if __name__ == "__main__":
     TEST = "Hello World!"
