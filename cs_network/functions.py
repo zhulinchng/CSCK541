@@ -334,7 +334,11 @@ def data_input(config_dict: dict, max_bytes: int = 1024, retry: int = 3) -> Unio
 
     key = 'default'
     data = {}
-    print("Enter the dictionary:")
+    print("Enter the dictionary:\n")
+    print("---Tip: The value can be another dictionary---\n")
+    print(
+"If entered using the correct python syntax, the value will be evaluated as a nested dictionary,\
+ otherwise it will be string.\n")
     while True:
         scheck, size = size_check(data)
         if not scheck:
@@ -364,7 +368,10 @@ def data_input(config_dict: dict, max_bytes: int = 1024, retry: int = 3) -> Unio
                 else:
                     print("Invalid value for XML.")
                     continue
-            data[key] = xvalue
+            if isinstance(xvalue, dict):
+                data[key] = xvalue
+            else:
+                data[key] = dvalue
         except (ValueError, SyntaxError):
             if config_dict['serialize'] == 3:
                 if validate_xml_value(dvalue):
