@@ -57,8 +57,8 @@ if __name__ == '__main__':
     for size in keysizes:
         pub_key, priv_key = generate_keys(size)
         save_keys(pub_key, priv_key, f'{FOLDER}\\keys_{size}')
-        load_pub_key = load_pub_key(f'{FOLDER}\\keys_{size}_pub.pem')
-        load_priv_key = load_priv_key(f'{FOLDER}\\keys_{size}_priv.pem')
+        load_pub_key = load_pub_key(f'{FOLDER}\\testkeys_{size}_pub.pem')
+        load_priv_key = load_priv_key(f'{FOLDER}\\testkeys_{size}_priv.pem')
         assert pub_key == load_pub_key, "Public keys do not match"
         assert priv_key == load_priv_key, "Private keys do not match"
         print("Keys generated and loaded successfully")
