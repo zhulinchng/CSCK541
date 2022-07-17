@@ -146,7 +146,7 @@ def send_with_retry(sock: socket.socket,
             time.sleep(sleep)
 
 
-def start_client(timeout: int = 600) -> None:
+def start_client(timeout: Union[int, None] = None) -> None:
     """
     Main function.
 

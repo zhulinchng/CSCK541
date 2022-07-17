@@ -6,6 +6,7 @@ import time
 import pickle
 from ast import literal_eval
 import xml.dom.minidom
+from typing import Union
 import rsa
 from os.path import dirname, join, abspath, exists
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
@@ -243,7 +244,7 @@ def process_recv_data(config_dict: dict,
     return status
 
 
-def start_server(timeout: int = 600) -> None:
+def start_server(timeout: Union[int,None] = None) -> None:
     """
     Start the server.
 
