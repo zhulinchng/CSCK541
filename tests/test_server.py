@@ -1,4 +1,6 @@
 #test for server.py
+# one is required to change the values in the variables within a function to test
+# if correct input is provided, the tests will run once the program is run
 import pytest
 import server
 
