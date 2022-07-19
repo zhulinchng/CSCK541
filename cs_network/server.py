@@ -271,7 +271,7 @@ def start_server(timeout: Union[int,None] = None) -> None:
                 config, data, serv_conf, priv_key=key)
             # Send status message
             send_response(conn, status_msg)
-            # Get client configuration to continue
+            # Check if the client wants to continue
             cont = int(receive_data(conn).decode('utf-8'))
     sock.close()
     print("Server closed.")

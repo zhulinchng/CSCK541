@@ -162,7 +162,7 @@ def start_client(timeout: Union[int, None] = None) -> None:
     config = {}
     data_dict = {}
     while start > 0:
-        print("---------Input Config and Data---------")
+        print("---------Connection Initialized---------")
         if start == 1:
             config, data_dict = input_data(
                 config, data_dict, start_from=start, example_p_key=EXAMPLE_PUB_KEY)
