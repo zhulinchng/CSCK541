@@ -374,7 +374,7 @@ def data_input(config_dict: dict, max_bytes: int = 1024, retry: int = 3) -> Unio
                 data[key] = xvalue
             else:
                 data[key] = dvalue
-        except (ValueError, SyntaxError):
+        except (ValueError, SyntaxError, TypeError):
             if config_dict['serialize'] == 3:
                 if validate_xml_value(dvalue):
                     data[key] = dvalue
