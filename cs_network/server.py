@@ -7,8 +7,8 @@ import pickle
 from ast import literal_eval
 import xml.dom.minidom
 from typing import Union
-import rsa
 from os.path import dirname, join, abspath, exists
+import rsa
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
 from encryption import decrypt, EXAMPLE_PRIV_KEY, load_priv_key
 from cs_network import network_config, server_config

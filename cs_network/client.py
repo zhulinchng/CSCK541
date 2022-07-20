@@ -5,9 +5,9 @@ import sys
 import pickle
 import time
 import base64
-import rsa
 from typing import Union
 from os.path import dirname, join, abspath
+import rsa
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
 from encryption import encrypt, EXAMPLE_PUB_KEY
 from cs_network import data_config, network_config, data_input
