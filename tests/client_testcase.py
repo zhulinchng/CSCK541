@@ -1,5 +1,5 @@
 """Test cases for client."""
-
+import os
 
 def split_dict(data_dict: dict) -> list:
     """
@@ -32,6 +32,10 @@ input_1_config = {"type": 1, "encrypt": 1, "public_key": ""}
 input_1_data = {'encryptedkey': 'encryptedvalue',
                 '123': '456', 'nested_dict': {'nest': 'value'}}
 input_1 = join_config_data(input_1_config, input_1_data) + [""]
+output_1_config = {"type": 1, "encrypt": 1, "serialize": 1}
+test_case_1 = {'case': 'Encrypted Dictionary','input_config': input_1_config,
+               'input_data': input_1_data,
+               'input': input_1, 'output_config': output_1_config}
 
 # Plain dictionary test case - Binary serialization
 input_2_config = {"type": 1, "encrypt": 2, "serialize": 1}
@@ -52,14 +56,19 @@ input_4_data = {'testkey': 'testvalue',
 input_4 = join_config_data(input_4_config, input_4_data) + [""]
 
 # Encrypted text test case
-input_5_config = {"type": 2, "txtfilepath": ".\\tests",
+input_5_config = {"type": 2, "txtfilepath": os.path.dirname(__file__),
                   "txtfilename": 'client_output',
                   "encrypt": 1, "public_key": ""}
 INPUT_5_DATA = "encryptedtext"
 input_5 = join_config_data(input_5_config, {}) + [INPUT_5_DATA] + [""]
+output_5_config = {"type": 2,
+                   "encrypt": 1, "serialize": None}
+test_case_5 = {'case': 'Encrypted Text', 'input_config': input_5_config,
+               'input_data': INPUT_5_DATA,
+               'input': input_5, 'output_config': output_5_config}
 
 # Plain text test case - No serialization
-input_6_config = {"type": 2, "txtfilepath": ".\\tests",
+input_6_config = {"type": 2, "txtfilepath": os.path.dirname(__file__),
                   "txtfilename": 'client_output', "encrypt": 2}
 INPUT_6_DATA = "plaintext"
 input_6 = join_config_data(input_6_config, {}) + [INPUT_6_DATA] + [""]

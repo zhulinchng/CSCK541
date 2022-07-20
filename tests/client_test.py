@@ -1,13 +1,16 @@
 """Unit test for client."""
 import sys
 import time
+import pickle
 import unittest
 from unittest import mock
 from io import StringIO
+import os
 from os.path import dirname, join, abspath
+import rsa
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
 from tests import client_testcase
-from encryption import EXAMPLE_PUB_KEY
+from encryption import EXAMPLE_PUB_KEY, EXAMPLE_PRIV_KEY
 from cs_network import client
 
 class TestClient(unittest.TestCase):
@@ -106,10 +109,41 @@ class TestClient(unittest.TestCase):
         self.assertEqual(data, client_testcase.INPUT_6_DATA)
 
 # _{time.strftime("%Y%m%d_%H%M%S", time.localtime())}.txt
-    # def test_process(self):
-    #     """Test for process_data."""
-    #     config = {}
-    #     data = {}
+    def test_process(self):
+        """Test for process_data."""
+        client_testcase.test_case_1['input_config']['public_key'] = EXAMPLE_PUB_KEY
+        client_testcase.test_case_1['input_config']['serialize'] = 1
+        client_testcase.test_case_5['input_config']['public_key'] = EXAMPLE_PUB_KEY
+        client_testcase.test_case_5['input_config']['serialize'] = None
+
+        tests = [client_testcase.test_case_1, client_testcase.test_case_5]
+        for test in tests:
+            with self.subTest(case=test['case']):
+                # As encryption uses random numbers for padding, we need to
+                # decrypt the data to compare it to the original.
+                if test['input_config']['encrypt'] == 1:
+                    test_config, test_data = client.process_data(test['input_config'],
+                                                                test['input_data'])
+                    self.assertEqual(test_config, test['output_config'])
+                    if test['input_config']['type'] == 1:
+                        self.assertEqual((rsa.decrypt(pickle.loads(test_data), EXAMPLE_PRIV_KEY)).decode('utf-8'),
+                                        str(test['input_data']))
+                    elif test['input_config']['type'] == 2:
+                        # delete file after test
+                        os.remove(f"{test['input_config']['txtfilepath']}_{time.strftime('%Y%m%d_%H%M%S', time.localtime())}.txt")
+                        self.assertEqual((rsa.decrypt(test_data, EXAMPLE_PRIV_KEY)).decode('utf-8'),
+                                         str(test['input_data']))
+                # elif test['input_config']['encrypt'] == 2:
+                #     test_config, test_data = client.process_data(test['input_config'],
+                #                                                 test['input_data'])
+                #     self.assertEqual(test_config, test['output_config'])
+                #     if test['input_config']['type'] == 1:
+                #         self.assertEqual(pickle.loads(test_data), test['input_data'])
+                #     elif test['input_config']['type'] == 2:
+                #         # delete file after test
+                #         os.remove(f"{test['input_config']['txtfilepath']}_{time.strftime('%Y%m%d_%H%M%S', time.localtime())}.txt")
+                #         self.assertEqual(test_data, test['input_data'])
+
     #     send_config, encoded_data = client.process_data(config, data)
     #     print(send_config, encoded_data)
         # self.assertEqual(send_config, testcase_config)
