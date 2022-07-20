@@ -126,11 +126,15 @@ class TestClient(unittest.TestCase):
                                                                 test['input_data'])
                     self.assertEqual(test_config, test['output_config'])
                     if test['input_config']['type'] == 1:
-                        self.assertEqual((rsa.decrypt(pickle.loads(test_data), EXAMPLE_PRIV_KEY)).decode('utf-8'),
+                        self.assertEqual(
+                            (rsa.decrypt(
+                                pickle.loads(test_data), EXAMPLE_PRIV_KEY)).decode('utf-8'),
                                         str(test['input_data']))
                     elif test['input_config']['type'] == 2:
                         # delete file after test
-                        os.remove(f"{test['input_config']['txtfilepath']}_{time.strftime('%Y%m%d_%H%M%S', time.localtime())}.txt")
+                        os.remove(f"\
+{test['input_config']['txtfilepath']}_\
+{time.strftime('%Y%m%d_%H%M%S', time.localtime())}.txt")
                         self.assertEqual((rsa.decrypt(test_data, EXAMPLE_PRIV_KEY)).decode('utf-8'),
                                          str(test['input_data']))
                 # elif test['input_config']['encrypt'] == 2:
