@@ -363,7 +363,10 @@ def data_input(config_dict: dict, max_bytes: int = 1024, retry: int = 3) -> Unio
                         print("Invalid value for XML.")
                         continue
                 if validate_xml_value(xvalue):
-                    data[key] = xvalue
+                    if isinstance(xvalue, dict):
+                        data[key] = xvalue
+                    else:
+                        data[key] = dvalue
                     scheck, size = size_check(data)
                     print(f'Dictionary: {data} \nSize: {size} bytes')
                     continue
