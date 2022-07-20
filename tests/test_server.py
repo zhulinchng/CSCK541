@@ -1,44 +1,55 @@
 #test for server.py
 # one is required to change the values in the variables within a function to test
 # if correct input is provided, the tests will run once the program is run
-import pytest
+import unittest
 import server
 
-def test_initialize_server(): 
-    initialization = server.initialize_server("localhost", 80,1)
-    print(initialization)
+class servertests(unittest.TestCase):
 
-def test_receive_config():
-    configs = server.receive_config(socket.socket,"localhost",3)
-    print (configs)
+    def test_initialize_server(self): 
+        actual = server.initialize_server("localhost", 80,1)
+        expected = ""
+        self.assertEqual(actual, expected)
 
-def test_receive_data():
-    receive_data = server.receive_data(socket.socket, 3)
-    print (receive_data)
+    def test_receive_config(self):
+        actual = server.receive_config(socket.socket,"localhost",3)
+        expected = ""
+        self.assertEqual(actual, expected)
 
-def test_send_response():
-    send_response = server.send_response(socket.socket, "hello", 3)
-    print (send_response)
+    def test_receive_data(self):
+        actual = server.receive_data(socket.socket, 3)
+        expected = ""
+        self.assertEqual(actual, expected)
 
-def test_get_private_key():
-    get_private_key = server.get_private_key(3,"12345678fdfsd")
-    print(get_private_key)
+    def test_send_response(self):
+        actual = server.send_response(socket.socket, "hello", 3)
+        expected = ""
+        self.assertEqual(actual, expected)
 
-def test_print_dict():
-    print_dict = server.print_dict({one}:{1}))
-    print(print_dict)
+    def test_get_private_key(self):
+        actual = server.get_private_key(3,"12345678fdfsd")
+        expected = ""
+        self.assertEqual(actual, expected)
 
-def test_print_to_terminal():
-    print_to_terminal = server.print_to_terminal("testing testing")
-    print(print_to_terminal)
+    def test_print_dict(self):
+        actual = server.print_dict({one}:{1}))
+        expected = ""
+        self.assertEqual(actual, expected)
 
-def test_process_recv_data():
-    process_recv_data = server.process_recv_data({one}:{1},
-                      recv_data: bytes,
-                      server_configuration: dict,
-                      priv_key: rsa.PrivateKey = EXAMPLE_PRIV_KEY)
-    print (process_recv_data)
+    def test_print_to_terminal(self):
+        actual = server.print_to_terminal("testing testing")
+        expected = ""
+        self.assertEqual(actual, expected)
 
-def test_start_server():
-    server_started = server.start_server()
-    print server_started
+    def test_process_recv_data(self):
+        actual = server.process_recv_data({one}:{1},
+                        recv_data: bytes,
+                        server_configuration: dict,
+                        priv_key: rsa.PrivateKey = EXAMPLE_PRIV_KEY)
+        expected = ""
+        self.assertEqual(actual, expected)
+
+    def test_start_server(self):
+        actual = server.start_server()
+        expected = ""
+        self.assertEqual(actual, expected)
