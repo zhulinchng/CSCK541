@@ -7,7 +7,7 @@ import client
 class servertests(unittest.TestCase):
     def test_initialize_client(self):
         actual = client.initialize_client("localhost", 80)
-        expected = ""
+        expected = "localhost:80"
         self.assertEqual(actual, expected)
 
     def test_input_data(self):
