@@ -146,7 +146,7 @@ def print_dict(input_dict: dict) -> None:
     """
     print("------------Start Dictionary Text Output------------")
     for key, value in input_dict.items():
-        print(f"{key}: {value}")
+        print(f"{repr(key)}: {repr(value)}")
     print("------------End Dictionary Text Output------------")
 
 
@@ -158,7 +158,7 @@ def print_to_terminal(text: str) -> None:
     :return: None.
     """
     print("------------Start Output------------")
-    print(text)
+    print(repr(text))
     print("------------End Output------------")
 
 
