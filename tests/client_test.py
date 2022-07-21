@@ -132,9 +132,12 @@ class TestClient(unittest.TestCase):
                                         str(test['input_data']))
                     elif test['input_config']['type'] == 2:
                         # delete file after test
-                        os.remove(f"\
+                        try:
+                            os.remove(f"\
 {test['input_config']['txtfilepath']}_\
 {time.strftime('%Y%m%d_%H%M%S', time.localtime())}.txt")
+                        except FileNotFoundError:
+                            pass
                         self.assertEqual((rsa.decrypt(test_data, EXAMPLE_PRIV_KEY)).decode('utf-8'),
                                          str(test['input_data']))
                 # elif test['input_config']['encrypt'] == 2:
