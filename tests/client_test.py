@@ -11,7 +11,8 @@ import rsa
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
 from cs_network import client
 from encryption import EXAMPLE_PUB_KEY, EXAMPLE_PRIV_KEY
-from tests import client_testcase
+from tests.testcase import test_case_1, test_case_2, test_case_3, test_case_4, test_case_5
+from tests.testcase import test_case_6, test_case_7, test_case_8, test_case_9, test_case_10
 
 
 class TestClient(unittest.TestCase):
@@ -40,20 +41,20 @@ class TestClient(unittest.TestCase):
     def test_input_encrypted_dict(self):
         """Encrypted dictionary input test case."""
 
-        config, data = self.client_input_test(client_testcase.input_1)
+        config, data = self.client_input_test(test_case_1['input'])
         config = self.del_none_from_dict(config)
-        client_testcase.input_1_config['public_key'] = EXAMPLE_PUB_KEY
-        client_testcase.input_1_config['serialize'] = 1
-        self.assertEqual(config, client_testcase.input_1_config)
-        self.assertEqual(data, client_testcase.input_1_data)
+        test_case_1['input_config']['public_key'] = EXAMPLE_PUB_KEY
+        test_case_1['input_config']['serialize'] = 1
+        self.assertEqual(config, test_case_1['input_config'])
+        self.assertEqual(data, test_case_1['input_data'])
 
     def test_input_plain_dict_serial(self):
         """
         Plain dictionary input test case.
         Testing binary, JSON and XML serialization.
         """
-        tests = [client_testcase.test_case_2,
-                 client_testcase.test_case_3, client_testcase.test_case_4]
+        tests = [test_case_2,
+                 test_case_3, test_case_4]
         for test in tests:
             with self.subTest(case=test['case']):
                 config, data = self.client_input_test(test['input'])
@@ -64,39 +65,41 @@ class TestClient(unittest.TestCase):
     def test_input_encrypted_text(self):
         """Encrypted text test case."""
 
-        config, data = self.client_input_test(client_testcase.input_5)
-        client_testcase.input_5_config[
-            'txtfilepath'] = f'{client_testcase.input_5_config["txtfilepath"]}\
-\\{client_testcase.input_5_config["txtfilename"]}'
-        del client_testcase.input_5_config['txtfilename']
-        client_testcase.input_5_config['public_key'] = EXAMPLE_PUB_KEY
-        client_testcase.input_5_config['serialize'] = None
-        self.assertEqual(config, client_testcase.input_5_config)
-        self.assertEqual(data, client_testcase.INPUT_5_DATA)
+        config, data = self.client_input_test(
+            test_case_5['input'])
+        test_case_5['input_config'][
+            'txtfilepath'] = f'{test_case_5["input_config"]["txtfilepath"]}\
+\\{test_case_5["input_config"]["txtfilename"]}'
+        del test_case_5['input_config']['txtfilename']
+        test_case_5['input_config']['public_key'] = EXAMPLE_PUB_KEY
+        test_case_5['input_config']['serialize'] = None
+        self.assertEqual(config, test_case_5['input_config'])
+        self.assertEqual(data, test_case_5['input_data'])
 
     def test_input_plain_text(self):
         """Plain text test case."""
 
-        config, data = self.client_input_test(client_testcase.input_6)
-        client_testcase.input_6_config[
-            'txtfilepath'] = f'{client_testcase.input_6_config["txtfilepath"]}\
-\\{client_testcase.input_6_config["txtfilename"]}'
-        del client_testcase.input_6_config['txtfilename']
-        client_testcase.input_6_config['public_key'] = None
-        client_testcase.input_6_config['serialize'] = None
-        self.assertEqual(config, client_testcase.input_6_config)
-        self.assertEqual(data, client_testcase.INPUT_6_DATA)
+        config, data = self.client_input_test(
+            test_case_6['input'])
+        test_case_6['input_config'][
+            'txtfilepath'] = f'{test_case_6["input_config"]["txtfilepath"]}\
+\\{test_case_6["input_config"]["txtfilename"]}'
+        del test_case_6['input_config']['txtfilename']
+        test_case_6['input_config']['public_key'] = None
+        test_case_6['input_config']['serialize'] = None
+        self.assertEqual(config, test_case_6['input_config'])
+        self.assertEqual(data, test_case_6['input_data'])
 
     def test_process(self):
         """Test for process_data."""
-        client_testcase.test_case_1['input_config']['public_key'] = EXAMPLE_PUB_KEY
-        client_testcase.test_case_1['input_config']['serialize'] = 1
-        client_testcase.test_case_5['input_config']['public_key'] = EXAMPLE_PUB_KEY
-        client_testcase.test_case_5['input_config']['serialize'] = None
+        test_case_1['input_config']['public_key'] = EXAMPLE_PUB_KEY
+        test_case_1['input_config']['serialize'] = 1
+        test_case_5['input_config']['public_key'] = EXAMPLE_PUB_KEY
+        test_case_5['input_config']['serialize'] = None
 
-        tests = [client_testcase.test_case_1, client_testcase.test_case_2,
-                 client_testcase.test_case_3, client_testcase.test_case_4,
-                 client_testcase.test_case_5, client_testcase.test_case_6]
+        tests = [test_case_1, test_case_2,
+                 test_case_3, test_case_4,
+                 test_case_5, test_case_6]
         for test in tests:
             with self.subTest(case=test['case']):
                 # As encryption uses random numbers for padding, we need to
@@ -154,8 +157,8 @@ class TestClient(unittest.TestCase):
 
     def test_continue(self):
         """Test for continue_input."""
-        tests = [client_testcase.test_case_7, client_testcase.test_case_8,
-                 client_testcase.test_case_9, client_testcase.test_case_10]
+        tests = [test_case_7, test_case_8,
+                 test_case_9, test_case_10]
         for test in tests:
             with self.subTest(case=test['case']):
                 start_point = self.continue_input_test(
