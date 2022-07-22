@@ -132,7 +132,7 @@ class TestClient(unittest.TestCase):
                             os.remove(f"\
 {test['input_config']['txtfilepath']}_\
 {time.strftime('%Y%m%d_%H%M%S', time.localtime())}.txt")
-                        except FileNotFoundError:
+                        except (FileNotFoundError, OSError):
                             pass
                         self.assertEqual((rsa.decrypt(test_data, EXAMPLE_PRIV_KEY)).decode('utf-8'),
                                          str(test['input_data']))

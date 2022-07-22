@@ -34,7 +34,12 @@ input_1 = join_config_data(input_1_config, input_1_data) + [""]
 output_1_config = {"type": 1, "encrypt": 1, "serialize": 1}
 test_case_1 = {'case': 'Encrypted Dictionary', 'input_config': input_1_config,
                'input_data': input_1_data,
-               'input': input_1, 'output_config': output_1_config}
+               'input': input_1, 'output_config': output_1_config,
+               'term_out': [
+                '------------Start Dictionary Text Output------------',
+               "'encryptedkey': 'encryptedvalue'", "'123': '456'",
+               "'nested_dict': {'nest': 'value'}",
+               '------------End Dictionary Text Output------------', '']}
 
 # Plain dictionary test case - Binary serialization
 input_2_config = {"type": 1, "encrypt": 2, "serialize": 1}
@@ -76,7 +81,7 @@ test_case_4 = {'case': 'Plain Dictionary - XML Serialization',
 
 # Encrypted text test case
 input_5_config = {"type": 2, "txtfilepath": os.path.dirname(__file__),
-                  "txtfilename": 'client_output',
+                  "txtfilename": 'client_test_output',
                   "encrypt": 1, "public_key": ""}
 INPUT_5_DATA = "encryptedtext"
 input_5 = join_config_data(input_5_config, {}) + [INPUT_5_DATA] + [""]
@@ -84,11 +89,14 @@ output_5_config = {"type": 2,
                    "encrypt": 1, "serialize": None}
 test_case_5 = {'case': 'Encrypted Text', 'input_config': input_5_config,
                'input_data': INPUT_5_DATA,
-               'input': input_5, 'output_config': output_5_config}
+               'input': input_5, 'output_config': output_5_config,
+               'term_out': ['------------Start Output------------',
+               "'encryptedtext'",
+               '------------End Output------------', '']}
 
 # Plain text test case - No serialization
 input_6_config = {"type": 2, "txtfilepath": os.path.dirname(__file__),
-                  "txtfilename": 'client_output', "encrypt": 2}
+                  "txtfilename": 'client_test_output', "encrypt": 2}
 INPUT_6_DATA = "plaintext"
 input_6 = join_config_data(input_6_config, {}) + [INPUT_6_DATA] + [""]
 output_6_config = {"type": 2, "encrypt": 2,
@@ -110,3 +118,22 @@ test_case_9 = {'case': 'Exit', 'input_data': ['y', '3'],
 
 test_case_10 = {'case': 'Exit', 'input_data': 'n',
                'output_data': 0}
+
+server_1_config = {"output_method": 1,
+                   "filepath": os.path.dirname(__file__),
+                   "filename": "server_test_output"}
+server_1 = join_config_data(server_1_config, {}) + [""]
+server_output_1_config = {"output_method": 1,
+                          "filepath": f'{os.path.dirname(__file__)}\\server_test_output'}
+server_case_1 = {'case': 'Server output to file',
+                 'input_config': server_1_config,
+                 'input': server_1,
+                 'output_config': server_output_1_config}
+
+server_2_config = {"output_method": 2}
+server_2 = join_config_data(server_2_config, {})
+server_output_2_config = {"output_method": 2, "filepath": None}
+server_case_2 = {'case': 'Server output to console',
+                 'input_config': server_2_config,
+                 'input': server_2,
+                 'output_config': server_output_2_config}

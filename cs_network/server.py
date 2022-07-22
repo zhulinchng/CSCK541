@@ -145,7 +145,7 @@ def get_private_key(retry: int = 3,
             print("Public key .pem file not found.\nEnter a valid file path.")
             continue
     if priv_key == '':
-        print("Could not load the private key.\nEncrypted files will not be decrypted.")
+        print("Could not load the private key.\nEncrypted data will not be decrypted.")
     return priv_key
 
 
