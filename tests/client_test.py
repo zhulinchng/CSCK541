@@ -38,6 +38,19 @@ class TestClient(unittest.TestCase):
                 del config_dict[key]
         return config_dict
 
+    def client_netconf_input_test(self, test_inputs: list) -> tuple:
+        """Mock input for network_config."""
+        test_inputs = [str(x) for x in test_inputs]
+        with mock.patch('builtins.input', side_effect=test_inputs):
+            host, port = client.network_config()
+        return host, port
+
+    def test_network_config(self):
+        "Test network_config."
+        host, port = self.client_netconf_input_test(["localhost", "12345"])
+        self.assertEqual(host, "localhost")
+        self.assertEqual(port, 12345)
+
     def test_input_encrypted_dict(self):
         """Encrypted dictionary input test case."""
 

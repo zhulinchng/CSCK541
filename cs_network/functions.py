@@ -95,7 +95,12 @@ def network_config(retry: int = 3, default_port: int = 50541) -> tuple:
             break
         except socket.gaierror:
             print("Invalid hostname.\nEnter a valid IPv4 hostname.")
+            host = None
             continue
+
+    if host is None:
+        print("Invalid host. Exiting.")
+        sys.exit(1)
 
     for _ in range(retry):
         try:
@@ -110,7 +115,12 @@ def network_config(retry: int = 3, default_port: int = 50541) -> tuple:
             return host, port
         except ValueError:
             print("Invalid port.\nEnter a valid port.")
+            port = None
             continue
+
+    if port is None:
+        print("Invalid port. Exiting.")
+        sys.exit(1)
 
 
 def validation(config_input: str, input_tup: tuple, err_msg: str = "Invalid input") -> bool:
@@ -155,6 +165,13 @@ def data_config(retry: int = 3,
         if validation(config['type'], valid_range, error_message + str(valid_range)):
             config['type'] = int(config['type'])
             break
+        else:
+            config['type'] = None
+            continue
+
+    if config['type'] is None:
+        print("Invalid type. Exiting.")
+        sys.exit(1)
 
     if config['type'] == 2:
         for _ in range(retry):
@@ -186,8 +203,10 @@ def data_config(retry: int = 3,
                 break
             except FileNotFoundError:
                 print("Invalid folder path.\nEnter a valid folder path.")
+                config['txtfilepath'] = None
                 continue
             except ValueError:
+                config['txtfilepath'] = None
                 continue
     else:
         config['txtfilepath'] = None
@@ -198,6 +217,13 @@ def data_config(retry: int = 3,
         if validation(config['encrypt'], valid_range, error_message + str(valid_range)):
             config['encrypt'] = int(config['encrypt'])
             break
+        else:
+            config['encrypt'] = None
+            continue
+
+    if config['encrypt'] is None:
+        print("Invalid encrypt option. Exiting.")
+        sys.exit(1)
 
     if config['encrypt'] == 1:
         for _ in range(retry):
@@ -217,9 +243,14 @@ def data_config(retry: int = 3,
                 raise FileNotFoundError
             except FileNotFoundError:
                 print("Public key .pem file not found.\nEnter a valid file path.")
+                config['public_key'] = None
                 continue
     else:
         config['public_key'] = None
+
+    if config['encrypt'] == 1 and config['public_key'] is None:
+        print("Invalid public key. Exiting.")
+        sys.exit(1)
 
     if config['type'] == 1 and config['encrypt'] == 2:
         for _ in range(retry):
@@ -229,11 +260,18 @@ def data_config(retry: int = 3,
             if validation(config['serialize'], valid_range, error_message + str(valid_range)):
                 config['serialize'] = int(config['serialize'])
                 break
+            else:
+                config['serialize'] = None
+                continue
     elif config['type'] == 1 and config['encrypt'] == 1:
         print("Serialization method will default to binary for encrypted dictionary.")
         config['serialize'] = 1
     else:
         config['serialize'] = None
+
+    if config['type'] == 1 and config['encrypt'] == 2 and config['serialize'] is None:
+        print("Invalid serialization method. Exiting.")
+        sys.exit(1)
 
     return config
 
@@ -259,6 +297,13 @@ def server_config(retry: int = 3) -> dict:
         if validation(serv_config['output_method'], valid_range, error_message + str(valid_range)):
             serv_config['output_method'] = int(serv_config['output_method'])
             break
+        else:
+            serv_config['output_method'] = None
+            continue
+
+    if serv_config['output_method'] is None:
+        serv_config['output_method'] = 2
+        print("No output method selected, default to using console output.")
 
     if serv_config['output_method'] == 1:
         for _ in range(retry):
@@ -291,20 +336,27 @@ def server_config(retry: int = 3) -> dict:
                 break
             except FileNotFoundError:
                 print("Invalid folder path.\nEnter a valid folder path.")
+                serv_config['filepath'] = None
                 continue
             except ValueError:
+                serv_config['filepath'] = None
                 continue
     else:
         serv_config['filepath'] = None
 
+    if serv_config['output_method'] == 1 and serv_config['filepath'] is None:
+        print("Invalid folder path. Exiting.")
+        sys.exit(1)
+
     return serv_config
 
 
-def data_input(config_dict: dict, max_bytes: int = 1024, retry: int = 3) -> Union[str, dict]:
+def data_input(config_dict: dict, max_bytes: int = 1024) -> Union[str, dict]:
     """
     Get the user's data.
 
     :config_dict: The user's configuration data.
+    :max_bytes: The maximum number of bytes to send.
     :return: The user's data.
     """
     def size_check(data: Union[str, dict], serial_method: int = config_dict['serialize']) -> bool:
@@ -324,13 +376,15 @@ def data_input(config_dict: dict, max_bytes: int = 1024, retry: int = 3) -> Unio
     print("------------Enter data------------")
     print("Maximum data size: " + str(max_bytes) + " bytes")
     if config_dict['type'] == 2:
-        for _ in range(retry):
+        data = ''
+        while size_check(data)[0]:
             print("Enter the text data:")
             data = input("Enter the text: ").strip()
             if size_check(data)[0]:
                 return data
             print(
                 f"Data size exceeded {-size_check(data)[1]} bytes.\nEnter less data.")
+
 
     key = 'default'
     data = {}

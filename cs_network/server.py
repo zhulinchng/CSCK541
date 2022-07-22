@@ -4,6 +4,7 @@ import sys
 import json
 import time
 import pickle
+import base64
 from ast import literal_eval
 import xml.dom.minidom
 from typing import Union
@@ -44,23 +45,31 @@ def receive_config(connection: socket.socket, address: str = '', retry: int = 3)
     :return: The dictionary of data.
     """
     # receive the data
-    for i in range(retry):
+    for i in range(1,retry+1):
         try:
             recv_data = connection.recv(1024)
             if address != '':
                 print('Connected by', address)
+            connection_ok = True
         except socket.error:
             print("Connection Error on receiving config.")
+            connection_ok = False
         if not recv_data:
             print("No configuration received.")
         try:
             recv_data = json.loads(recv_data)
-            connection.sendall('CONFIG_OK'.encode('utf-8'))
-            return recv_data
+            if connection_ok:
+                connection.sendall('CONFIG_OK'.encode('utf-8'))
+                return recv_data
+            else:
+                print("Connection Error on sending CONFIG_OK response.")
         except json.decoder.JSONDecodeError:
             print("Could not decode the data.\nPlease check the data.")
-            connection.sendall('CONFIG_ERROR: JSONDecodeError'.encode('utf-8'))
-        print(f"Receive config error. Retry {i+1} of {retry}")
+            if connection_ok:
+                connection.sendall('CONFIG_ERROR: JSONDecodeError'.encode('utf-8'))
+            else:
+                print("Connection Error on sending CONFIG DECODE ERROR response.")
+        print(f"Receive config error. Retry {i} of {repr(retry)}")
         time.sleep(1)
     sys.exit(1)
 
@@ -117,10 +126,11 @@ def get_private_key(retry: int = 3,
     :return: The private key.
     """
     keypath = ''
+    priv_key = ''
     for _ in range(retry):
         try:
             keypath = input(
-                "Enter the private key .pem file path, or press enter to use example key: "
+                "Enter the private key .pem file path, or press Enter to use example key: "
             ).strip()
             if keypath == '':
                 priv_key = example_key
@@ -134,6 +144,8 @@ def get_private_key(retry: int = 3,
         except FileNotFoundError:
             print("Public key .pem file not found.\nEnter a valid file path.")
             continue
+    if priv_key == '':
+        print("Could not load the private key.\nEncrypted files will not be decrypted.")
     return priv_key
 
 
@@ -145,8 +157,11 @@ def print_dict(input_dict: dict) -> None:
     :return: None.
     """
     print("------------Start Dictionary Text Output------------")
-    for key, value in input_dict.items():
-        print(f"{repr(key)}: {repr(value)}")
+    if isinstance(input_dict, dict):
+        for key, value in input_dict.items():
+            print(f"{repr(key)}: {repr(value)}")
+    else:
+        print(f"{repr(input_dict)}")
     print("------------End Dictionary Text Output------------")
 
 
@@ -196,15 +211,20 @@ def process_recv_data(config_dict: dict,
     if config_dict['encrypt'] == 1:
         try:
             recv_data = decrypt(recv_data, priv_key).decode('utf-8')
-        except rsa.pkcs1.DecryptionError:
+        except (rsa.pkcs1.DecryptionError, AttributeError):
             print("Decryption Error: Could not decrypt the data.")
             status = 'DATA_ERROR: DecryptionError'
+            recv_data = base64.b64encode(recv_data).decode('utf-8')
 
     # Output the data to terminal
     if server_configuration['output_method'] == 2:
         if config_dict['serialize'] == 1 and config_dict['type'] == 1:
             if isinstance(recv_data, str):
-                recv_data = literal_eval(recv_data)
+                try:
+                    recv_data = literal_eval(recv_data)
+                except (ValueError, SyntaxError):
+                    print("Could not literal_eval the data.")
+                    status = 'DATA_ERROR: ValueError'
             print_dict(recv_data)
         else:
             print_to_terminal(recv_data)
@@ -259,20 +279,25 @@ def start_server(timeout: Union[int,None] = None) -> None:
     print("------------Start Connection------------")
     conn, addr = sock.accept()
     conn.settimeout(timeout) # Set the timeout for the connection
-    with conn:
-        cont = 1
-        while cont > 0:
-            # Get client configuration
-            config = receive_config(conn, addr)
-            # Get client data
-            data = receive_data(conn)
-            # Process data
-            status_msg = process_recv_data(
-                config, data, serv_conf, priv_key=key)
-            # Send status message
-            send_response(conn, status_msg)
-            # Check if the client wants to continue
-            cont = int(receive_data(conn).decode('utf-8'))
+    try:
+        with conn:
+            cont = 1
+            while cont > 0:
+                # Get client configuration
+                config = receive_config(conn, addr)
+                # Get client data
+                data = receive_data(conn)
+                # Process data
+                status_msg = process_recv_data(
+                    config, data, serv_conf, priv_key=key)
+                # Send status message
+                send_response(conn, status_msg)
+                # Check if the client wants to continue
+                cont = int(receive_data(conn).decode('utf-8'))
+    except socket.timeout:
+        print("Connection timed out.")
+    except ConnectionError:
+        print("Connection Error.")
     sock.close()
     print("Server closed.")
 

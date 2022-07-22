@@ -58,8 +58,7 @@ def input_data(configuration_dict: dict,
     if start_from <= 2:
         data_dictionary = data_input(
             config_dict=configuration_dict,
-            max_bytes=max_bytes,
-            retry=retry)
+            max_bytes=max_bytes)
 
     return configuration_dict, data_dictionary
 
@@ -85,9 +84,13 @@ def process_data(config_dict: dict, data: Union[str, dict]) -> tuple:
         textdata = data
 
     if output_dict['type'] == 2:
-        with open(f"{output_dict['txtfilepath']}_{time_txt}.txt", 'w', encoding='utf-8') as file:
-            file.write(str(textdata))
-            print(
+        if output_dict['txtfilepath'] is None:
+            print("Invalid file path specified. File will not be saved.")
+        else:
+            with open(f"{output_dict['txtfilepath']}_{time_txt}.txt", 'w',
+            encoding='utf-8') as file:
+                file.write(str(textdata))
+                print(
                 f"Data written successfully to {output_dict.pop('txtfilepath')}_{time_txt}.txt")
         if output_dict['encrypt'] == 2:
             output_dict['data'] = textdata.encode('utf-8')
