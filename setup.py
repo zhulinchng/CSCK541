@@ -10,7 +10,7 @@ dependencies = [
 
 setup(
     name='csck541',
-    version='0.4.5',
+    version='0.4.6',
     author='Zhu Lin Ch\'ng',
     author_email='z.chng@liverpool.ac.uk',
     description='Simple Client-Server Network',
