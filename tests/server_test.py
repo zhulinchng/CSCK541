@@ -9,9 +9,8 @@ import codecs
 import json
 import os
 from os.path import dirname, join, abspath
-import rsa
+import xml.etree.ElementTree as ET
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
-from tests.testcase import test_case_1, test_case_5
 from tests import testcase
 from encryption import EXAMPLE_PUB_KEY, EXAMPLE_PRIV_KEY
 from cs_network import server, process_data
@@ -77,17 +76,17 @@ class TestServer(unittest.TestCase):
 
     def test_process_encrypted_data(self):
         "Test for encrypted data."
-        test_case_1['input_config']['case'] = 'Encrypted dictionary: '
-        test_case_1['input_config']['public_key'] = EXAMPLE_PUB_KEY
-        test_case_1['input_config']['serialize'] = 1
-        test_case_5['input_config']['case'] = 'Encrypted text: '
-        test_case_5['input_config']['public_key'] = EXAMPLE_PUB_KEY
-        test_case_5['input_config']['serialize'] = None
-        test_case_5['input_config'][
-            'txtfilepath'] = f'{test_case_5["input_config"]["txtfilepath"]}\
-\\{test_case_5["input_config"]["txtfilename"]}'
+        testcase.test_case_1['input_config']['case'] = 'Encrypted dictionary: '
+        testcase.test_case_1['input_config']['public_key'] = EXAMPLE_PUB_KEY
+        testcase.test_case_1['input_config']['serialize'] = 1
+        testcase.test_case_5['input_config']['case'] = 'Encrypted text: '
+        testcase.test_case_5['input_config']['public_key'] = EXAMPLE_PUB_KEY
+        testcase.test_case_5['input_config']['serialize'] = None
+        testcase.test_case_5['input_config'][
+            'txtfilepath'] = f'{testcase.test_case_5["input_config"]["txtfilepath"]}\
+\\{testcase.test_case_5["input_config"]["txtfilename"]}'
 
-        tests = [test_case_1, test_case_5]
+        tests = [testcase.test_case_1, testcase.test_case_5]
         serv_confs = [testcase.server_case_1['output_config'],
                       testcase.server_case_2['output_config']]
         tcs = []
@@ -98,17 +97,18 @@ class TestServer(unittest.TestCase):
             for serv_conf in serv_confs:
                 case = test['input_config']['case']
                 if serv_conf['output_method'] == 1:
-                    case += 'file output'
+                    case += ': file output'
                 else:
-                    case += 'console output'
+                    case += ': console output'
                 tcs.append(
-                    (case, (test_config, test_data, serv_conf),
+                    (case,
+                    (test_config, test_data, serv_conf),
                      test))
                 case = ''
         for test in tcs:
             with self.subTest(case=test[0]):
-                time2 = time.strftime('%Y%m%d_%H%M%S', time.localtime())
                 status_msg, outputs = self.server_process_test(test[1])
+                self.assertEqual(status_msg, 'DATA_OK')
                 if 'file output' in test[0]:
                     # delete client output file
                     try:
@@ -118,22 +118,20 @@ class TestServer(unittest.TestCase):
                         pass
                     if 'Data written to ' in outputs[1]:
                         server_output = outputs[1].replace('Data written to ', '')
+                        filepath = codecs.decode(
+                            server_output, 'unicode_escape')[1:][:-1]
                         if test[2]['output_config']['serialize'] is None:
-                            filepath = codecs.decode(server_output, 'unicode_escape')[1:][:-1]
-                            with open(filepath, 'r', encoding='utf-8') as f:
+                            with open(filepath, 'r', encoding='utf-8') as file:
                                 self.assertEqual(
-                                    f.read(), test[2]['input_data'])
+                                    file.read(), test[2]['input_data'])
                         elif test[2]['output_config']['serialize'] == 1:
-                            filepath = codecs.decode(
-                                server_output, 'unicode_escape')[1:][:-1]
-                            with open(filepath, 'rb') as f:
+                            with open(filepath, 'rb') as file:
                                 self.assertEqual(
-                                    pickle.load(f), repr(test[2]['input_data']))
+                                    pickle.load(file), repr(test[2]['input_data']))
                 elif 'console output' in test[0]:
                     # Test for terminal output
                     self.assertEqual(
                         outputs, test[2]['term_out'])
-                self.assertEqual(status_msg, 'DATA_OK')
                 try:
                     path = codecs.decode(
                         server_output, 'unicode_escape')[1:][:-1]
@@ -142,7 +140,62 @@ class TestServer(unittest.TestCase):
                     pass
         return
 
-    # def test_process_decrypted_data(self):
+    def test_process_plain_data(self):
+        """Test for plain data."""
+        testcase.test_case_6['output_config']['txtfilepath'] = None
+        tests = [testcase.test_case_6, testcase.test_case_2,
+                 testcase.test_case_3, testcase.test_case_4]
+        serv_confs = [testcase.server_case_1['output_config'],
+                      testcase.server_case_2['output_config']]
+        tcs = []
+        for test in tests:
+            test_config, test_data = process_data(test['output_config'],
+                                                  test['input_data'])
+            for serv_conf in serv_confs:
+                case = test['case']
+                if serv_conf['output_method'] == 1:
+                    case += ': file output'
+                else:
+                    case += ': console output'
+                tcs.append(
+                    (case,
+                    (test_config, test_data, serv_conf),
+                     test))
+                case = ''
+        for test in tcs:
+            with self.subTest(case=test[0]):
+                status_msg, outputs = self.server_process_test(test[1])
+                self.assertEqual(status_msg, 'DATA_OK')
+                if 'file output' in test[0]:
+                    server_output = outputs[1].replace('Data written to ', '')
+                    filepath = codecs.decode(
+                        server_output, 'unicode_escape')[1:][:-1]
+                    if test[2]['output_config']['serialize'] is None:
+                        with open(filepath, 'r', encoding='utf-8') as file:
+                            self.assertEqual(
+                                file.read(), test[2]['input_data'])
+                    elif test[2]['output_config']['serialize'] == 1:
+                        with open(filepath, 'rb') as file:
+                            self.assertEqual(
+                                pickle.load(file), test[2]['input_data'])
+                    elif test[2]['output_config']['serialize'] == 2:
+                        with open(filepath, 'r', encoding='utf-8') as file:
+                            self.assertEqual(
+                                json.load(file), test[2]['input_data'])
+                    elif test[2]['output_config']['serialize'] == 3:
+                        with open(filepath, 'r', encoding='utf-8') as file:
+                            # print(ET.tostring(ET.fromstring(test[2]['output_data'])))
+                            self.assertEqual(
+                                ET.tostring(ET.parse(filepath).getroot()).decode(
+                                    'utf-8').replace('\n', '').replace('\t', ''),
+                                test[2]['output_data'])
+                    try:
+                        os.remove(filepath)
+                    except (FileNotFoundError, OSError):
+                        pass
+                elif 'console output' in test[0]:
+                    self.assertEqual(outputs,
+                                     test[2]['term_out'])
 
 
 

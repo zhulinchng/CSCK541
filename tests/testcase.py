@@ -51,7 +51,11 @@ test_case_2 = {'case': 'Plain Dictionary - Binary Serialization',
                'input_config': input_2_config,
                'input_data': input_2_data,
                'input': input_2,
-               'output_config': output_2_config}
+               'output_config': output_2_config,
+               'term_out': ['------------Start Dictionary Text Output------------',
+                             "'testkey': 'testvalue'", "'123': '456'",
+                             "'nested_dict': {'nest': 'value'}",
+                             '------------End Dictionary Text Output------------', '']}
 
 # Plain dictionary test case - JSON serialization
 input_3_config = {"type": 1, "encrypt": 2, "serialize": 2}
@@ -63,7 +67,11 @@ test_case_3 = {'case': 'Plain Dictionary - JSON Serialization',
                'input_config': input_3_config,
                'input_data': input_3_data,
                'input': input_3,
-               'output_config': output_3_config}
+               'output_config': output_3_config,
+               'term_out': ['------------Start Output------------',
+                            "{'testkey': 'testvalue', '123': '456',\
+ 'nested_dict': {'nest': 'value'}}",
+                            '------------End Output------------', '']}
 
 # Plain dictionary test case - XML serialization
 input_4_config = {"type": 1, "encrypt": 2, "serialize": 3}
@@ -77,7 +85,11 @@ test_case_4 = {'case': 'Plain Dictionary - XML Serialization',
                'input_config': input_4_config,
                'input_data': input_4_data,
                'input': input_4, 'output_data': OUTPUT_4_DATA,
-               'output_config': output_4_config}
+               'output_config': output_4_config,
+               'term_out': ['------------Start Output------------',
+                            "'<root><testkey>testvalue</testkey><a123>456</a123>\
+<nested_dict><nest><nest2>value</nest2></nest></nested_dict></root>'",
+                            '------------End Output------------', '']}
 
 # Encrypted text test case
 input_5_config = {"type": 2, "txtfilepath": os.path.dirname(__file__),
@@ -105,7 +117,10 @@ test_case_6 = {'case': 'Plain Text - No Serialization',
                'input_config': input_6_config,
                'input_data': INPUT_6_DATA,
                'input': input_6,
-               'output_config': output_6_config}
+               'output_config': output_6_config,
+               'term_out': ['------------Start Output------------',
+                            "'plaintext'",
+                            '------------End Output------------', '']}
 
 test_case_7 = {'case': 'Continue from input config', 'input_data': ['y','1'],
                 'output_data': 1}
