@@ -10,6 +10,7 @@ import json
 import os
 from os.path import dirname, join, abspath
 import xml.etree.ElementTree as ET
+import rsa
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
 from tests import testcase
 from encryption import EXAMPLE_PUB_KEY, EXAMPLE_PRIV_KEY
@@ -20,20 +21,29 @@ class TestServer(unittest.TestCase):
     """Unit test for client."""
 
     def server_netconf_input_test(self, test_inputs: list) -> tuple:
-        """Mock input for network_config."""
+        """
+        Mock input for server network_config.
+
+        :param test_inputs: list of inputs for network_config.
+        :return: tuple of host and port.
+        """
         test_inputs = [str(x) for x in test_inputs]
         with mock.patch('builtins.input', side_effect=test_inputs):
             host, port = server.network_config()
         return host, port
 
     def test_network_config(self):
-        "Test network_config."
+        "Test server network_config."
         host, port = self.server_netconf_input_test(["localhost", "12345"])
         self.assertEqual(host, "localhost")
         self.assertEqual(port, 12345)
 
-    def server_config_input_test(self, test_inputs: list) -> tuple:
-        """Mock input_data."""
+    def server_config_input_test(self, test_inputs: list) -> dict:
+        """
+        Mock input_data for server config.
+
+        :param test_inputs: list of inputs for server config.
+        :return: dictionary of server config."""
         test_inputs = [str(x) for x in test_inputs]
         with mock.patch('builtins.input', side_effect=test_inputs):
             serv_conf = server.server_config()
@@ -48,8 +58,12 @@ class TestServer(unittest.TestCase):
                     test['input'])
                 self.assertEqual(serv_conf, test['output_config'])
 
-    def server_key_input_test(self, test_inputs: list) -> tuple:
-        """Mock input_data."""
+    def server_key_input_test(self, test_inputs: list) -> rsa.PrivateKey:
+        """
+        Mock input_data for getting server private key.
+
+        :param test_inputs: list of inputs for getting server private key.
+        :return: tuple of server private key and server public key."""
         test_inputs = [str(x) for x in test_inputs]
         with mock.patch('builtins.input', side_effect=test_inputs):
             priv_key = server.get_private_key()
@@ -59,18 +73,23 @@ class TestServer(unittest.TestCase):
         """Test get_private_key."""
         test = {'input': [''], 'output_key': EXAMPLE_PRIV_KEY}
         priv_key = self.server_key_input_test(
-                    test['input'])
+            test['input'])
         self.assertEqual(priv_key, test['output_key'])
 
     @mock.patch('sys.stdout', new_callable=StringIO)
     def server_process_test(self, test_inputs: tuple, mock_stdout: StringIO) -> tuple:
-        """Mock input_data."""
+        """
+        Mock input_data for processing data.
+
+        :param test_inputs: tuple of input_config, input_data, server_config.
+        :param mock_stdout: status message and terminal output.
+        """
         outputs = []
         config = test_inputs[0]
         data = test_inputs[1]
         serv_conf = test_inputs[2]
         status_msg = server.process_recv_data(
-                config, data, serv_conf, priv_key=EXAMPLE_PRIV_KEY)
+            config, data, serv_conf, priv_key=EXAMPLE_PRIV_KEY)
         outputs.append(mock_stdout.getvalue())
         return status_msg, outputs[0].split("\n")
 
@@ -102,7 +121,7 @@ class TestServer(unittest.TestCase):
                     case += ': console output'
                 tcs.append(
                     (case,
-                    (test_config, test_data, serv_conf),
+                     (test_config, test_data, serv_conf),
                      test))
                 case = ''
         for test in tcs:
@@ -117,7 +136,8 @@ class TestServer(unittest.TestCase):
                     except (FileNotFoundError, KeyError, OSError):
                         pass
                     if 'Data written to ' in outputs[1]:
-                        server_output = outputs[1].replace('Data written to ', '')
+                        server_output = outputs[1].replace(
+                            'Data written to ', '')
                         filepath = codecs.decode(
                             server_output, 'unicode_escape')[1:][:-1]
                         if test[2]['output_config']['serialize'] is None:
@@ -159,7 +179,7 @@ class TestServer(unittest.TestCase):
                     case += ': console output'
                 tcs.append(
                     (case,
-                    (test_config, test_data, serv_conf),
+                     (test_config, test_data, serv_conf),
                      test))
                 case = ''
         for test in tcs:
@@ -196,7 +216,6 @@ class TestServer(unittest.TestCase):
                 elif 'console output' in test[0]:
                     self.assertEqual(outputs,
                                      test[2]['term_out'])
-
 
 
 if __name__ == "__main__":

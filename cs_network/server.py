@@ -11,8 +11,9 @@ from typing import Union
 from os.path import dirname, join, abspath, exists
 import rsa
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
-from encryption import decrypt, EXAMPLE_PRIV_KEY, load_priv_key
 from cs_network import network_config, server_config
+from encryption import decrypt, EXAMPLE_PRIV_KEY, load_priv_key
+
 
 def initialize_server(host: str, port: int, backlog: int = 1) -> socket.socket:
     """
@@ -45,7 +46,7 @@ def receive_config(connection: socket.socket, address: str = '', retry: int = 3)
     :return: The dictionary of data.
     """
     # receive the data
-    for i in range(1,retry+1):
+    for i in range(1, retry+1):
         try:
             recv_data = connection.recv(1024)
             if address != '':
@@ -66,7 +67,8 @@ def receive_config(connection: socket.socket, address: str = '', retry: int = 3)
         except json.decoder.JSONDecodeError:
             print("Could not decode the data.\nPlease check the data.")
             if connection_ok:
-                connection.sendall('CONFIG_ERROR: JSONDecodeError'.encode('utf-8'))
+                connection.sendall(
+                    'CONFIG_ERROR: JSONDecodeError'.encode('utf-8'))
             else:
                 print("Connection Error on sending CONFIG DECODE ERROR response.")
         print(f"Receive config error. Retry {i} of {repr(retry)}")
@@ -79,8 +81,6 @@ def receive_data(connection: socket.socket, retry: int = 3) -> bytes:
     Receive data from a connection.
 
     :param connection: The connection to receive data from.
-    :param address: The address of the connection.
-    :param timeout: The timeout of the connection.
     :param retry: The number of times to retry the connection.
     :return: The data.
     """
@@ -264,7 +264,7 @@ def process_recv_data(config_dict: dict,
     return status
 
 
-def start_server(timeout: Union[int,None] = None) -> None:
+def start_server(timeout: Union[int, None] = None) -> None:
     """
     Start the server.
 
@@ -278,7 +278,7 @@ def start_server(timeout: Union[int,None] = None) -> None:
     key = get_private_key()
     print("------------Start Connection------------")
     conn, addr = sock.accept()
-    conn.settimeout(timeout) # Set the timeout for the connection
+    conn.settimeout(timeout)  # Set the timeout for the connection
     try:
         with conn:
             cont = 1

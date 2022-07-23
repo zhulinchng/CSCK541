@@ -36,10 +36,10 @@ test_case_1 = {'case': 'Encrypted Dictionary', 'input_config': input_1_config,
                'input_data': input_1_data,
                'input': input_1, 'output_config': output_1_config,
                'term_out': [
-                '------------Start Dictionary Text Output------------',
-               "'encryptedkey': 'encryptedvalue'", "'123': '456'",
-               "'nested_dict': {'nest': 'value'}",
-               '------------End Dictionary Text Output------------', '']}
+                   '------------Start Dictionary Text Output------------',
+                   "'encryptedkey': 'encryptedvalue'", "'123': '456'",
+                   "'nested_dict': {'nest': 'value'}",
+                   '------------End Dictionary Text Output------------', '']}
 
 # Plain dictionary test case - Binary serialization
 input_2_config = {"type": 1, "encrypt": 2, "serialize": 1}
@@ -53,9 +53,9 @@ test_case_2 = {'case': 'Plain Dictionary - Binary Serialization',
                'input': input_2,
                'output_config': output_2_config,
                'term_out': ['------------Start Dictionary Text Output------------',
-                             "'testkey': 'testvalue'", "'123': '456'",
-                             "'nested_dict': {'nest': 'value'}",
-                             '------------End Dictionary Text Output------------', '']}
+                            "'testkey': 'testvalue'", "'123': '456'",
+                            "'nested_dict': {'nest': 'value'}",
+                            '------------End Dictionary Text Output------------', '']}
 
 # Plain dictionary test case - JSON serialization
 input_3_config = {"type": 1, "encrypt": 2, "serialize": 2}
@@ -103,8 +103,8 @@ test_case_5 = {'case': 'Encrypted Text', 'input_config': input_5_config,
                'input_data': INPUT_5_DATA,
                'input': input_5, 'output_config': output_5_config,
                'term_out': ['------------Start Output------------',
-               "'encryptedtext'",
-               '------------End Output------------', '']}
+                            "'encryptedtext'",
+                            '------------End Output------------', '']}
 
 # Plain text test case - No serialization
 input_6_config = {"type": 2, "txtfilepath": os.path.dirname(__file__),
@@ -122,18 +122,22 @@ test_case_6 = {'case': 'Plain Text - No Serialization',
                             "'plaintext'",
                             '------------End Output------------', '']}
 
-test_case_7 = {'case': 'Continue from input config', 'input_data': ['y','1'],
-                'output_data': 1}
+# Continue input test cases
+test_case_7 = {'case': 'Continue from input config', 'input_data': ['y', '1'],
+               'output_data': 1}
 
-test_case_8 = {'case': 'Continue from input data', 'input_data': ['y','2'],
+test_case_8 = {'case': 'Continue from input data', 'input_data': ['y', '2'],
                'output_data': 2}
 
 test_case_9 = {'case': 'Exit', 'input_data': ['y', '3'],
                'output_data': 0}
 
 test_case_10 = {'case': 'Exit', 'input_data': 'n',
-               'output_data': 0}
+                'output_data': 0}
 
+
+# Test cases for the Server Configuration
+# Output to file
 server_1_config = {"output_method": 1,
                    "filepath": os.path.dirname(__file__),
                    "filename": "server_test_output"}
@@ -145,6 +149,7 @@ server_case_1 = {'case': 'Server output to file',
                  'input': server_1,
                  'output_config': server_output_1_config}
 
+# Output to terminal
 server_2_config = {"output_method": 2}
 server_2 = join_config_data(server_2_config, {})
 server_output_2_config = {"output_method": 2, "filepath": None}

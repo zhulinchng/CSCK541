@@ -1,4 +1,5 @@
 """Unit test for client."""
+
 import sys
 import time
 import pickle
@@ -18,7 +19,12 @@ class TestClient(unittest.TestCase):
     """Unit test for client."""
 
     def client_input_test(self, test_inputs: list) -> tuple:
-        """Mock input_data."""
+        """
+        Mock input_data.
+
+        :param test_inputs: The input data.
+        :return: The parsed configuration dictionary and the data.
+        """
         test_inputs = [str(x) for x in test_inputs]
         with mock.patch('builtins.input', side_effect=test_inputs):
             config, data = client.input_data({}, {})
@@ -38,7 +44,12 @@ class TestClient(unittest.TestCase):
         return config_dict
 
     def client_netconf_input_test(self, test_inputs: list) -> tuple:
-        """Mock input for network_config."""
+        """
+        Mock input for network_config.
+
+        :param test_inputs: The input data.
+        :return: The host and port.
+        """
         test_inputs = [str(x) for x in test_inputs]
         with mock.patch('builtins.input', side_effect=test_inputs):
             host, port = client.network_config()
@@ -161,8 +172,13 @@ class TestClient(unittest.TestCase):
                         self.assertEqual(
                             test_data, test['input_data'].encode('utf-8'))
 
-    def continue_input_test(self, test_inputs: list) -> tuple:
-        """Mock for continue input."""
+    def continue_input_test(self, test_inputs: list) -> int:
+        """
+        Mock for continue input.
+
+        :param test_inputs: list of test inputs
+        :return: start point of the continue input
+        """
         with mock.patch('builtins.input', side_effect=test_inputs):
             start_point = client.continue_input()
         return start_point

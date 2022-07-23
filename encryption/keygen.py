@@ -50,6 +50,7 @@ def load_priv_key(filename: str) -> tuple:
         private = rsa.PrivateKey.load_pkcs1(file.read(), format='PEM')
     return private
 
+
 if __name__ == '__main__':
     from os.path import dirname
     keysizes = [2048]

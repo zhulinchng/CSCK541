@@ -16,6 +16,7 @@ import rsa
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
 from encryption import EXAMPLE_PUB_KEY, load_pub_key
 
+
 def dict_to_xml_string(dict_val: dict, root_tag: str = 'root') -> str:
     """
     Convert a dictionary to an XML string.
@@ -281,7 +282,6 @@ def server_config(retry: int = 3) -> dict:
     Get the server's configuration data.
 
     :retry: The number of times to retry the input.
-    :output_filelength: The length of the output file name.
     :return: The server's configuration data.
     """
     serv_config = {}
@@ -385,13 +385,12 @@ def data_input(config_dict: dict, max_bytes: int = 1024) -> Union[str, dict]:
             print(
                 f"Data size exceeded {-size_check(data)[1]} bytes.\nEnter less data.")
 
-
     key = 'default'
     data = {}
     print("Enter the dictionary:\n")
     print("---Tip: The value can be another dictionary---\n")
     print(
-"If entered using the correct python syntax, the value will be evaluated as a nested dictionary,\
+        "If entered using the correct python syntax, the value will be evaluated as a nested dictionary,\
  otherwise it will be string.\n")
     while True:
         scheck, size = size_check(data)
@@ -466,7 +465,7 @@ def continue_input() -> int:
     """
     Continue input.
 
-    :return: True if the user wants to continue, False otherwise.
+    :return: returns the state of the continue input.
     """
     while True:
         answer = input("Do you want to continue? (y/n): ")
