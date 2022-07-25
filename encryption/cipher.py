@@ -23,7 +23,7 @@ def decrypt(data_bytes: bytes, private_key: rsa.PrivateKey) -> str:
     The RSA module only operates on bytes, and not on strings.
     So string is required to be decoded.
 
-    :param msg: The message to decrypt.
+    :param data_bytes: The message in bytes to decrypt.
     :param private_key: The private key to decrypt with.
     :return: The decrypted message.
     """

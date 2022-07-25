@@ -126,7 +126,7 @@ def network_config(retry: int = 3, default_port: int = 50541) -> tuple:
 
 def validation(config_input: str, input_tup: tuple, err_msg: str = "Invalid input") -> bool:
     """
-    Validate the input.
+    Validate the integer input.
 
     :param config_input: The input to validate.
     :param input_tup: The valid input range.
@@ -360,6 +360,13 @@ def data_input(config_dict: dict, max_bytes: int = 1024) -> Union[str, dict]:
     :return: The user's data.
     """
     def size_check(data: Union[str, dict], serial_method: int = config_dict['serialize']) -> bool:
+        """
+        Check if the data is too large to send.
+        
+        :data: The data to check.
+        :serial_method: The serialization method.
+        :return: False if the data is too large and return the size difference, return True and the size otherwise.
+        """
         if serial_method == 1:
             size = len(pickle.dumps(data))
         elif serial_method == 2:
