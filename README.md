@@ -131,8 +131,8 @@ python
 >>> from cs_network import start_client
 >>> start_client()
 ------------Enter network configuration------------
-Enter the IPv4 host, or press enter to use CZLPC: 
-Using default hostname: CZLPC
+Enter the IPv4 host, or press enter to use EXAMPLE_PC: 
+Using default hostname: EXAMPLE_PC
 Enter the port, or press enter for default port 50541: 
 Using default port: 50541
 ---------Connection Initialized---------

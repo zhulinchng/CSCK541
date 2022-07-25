@@ -79,8 +79,8 @@ Size: 117 bytes
 Maximum data size: 245 bytes
 Enter the text data:
 .------------Enter network configuration------------
-.Data written successfully to C:\Users\zhu\OneDrive - The University of Liverpool\Code\csck541_test\venv\lib\site-packages\tests\client_test_output_20220725_222837.txt
-Data written successfully to C:\Users\zhu\OneDrive - The University of Liverpool\Code\csck541_test\venv\lib\site-packages\tests\client_test_output_20220725_222837.txt
+.Data written successfully to .csck541_test\venv\lib\site-packages\tests\client_test_output_20220725_222837.txt
+Data written successfully to .csck541_test\venv\lib\site-packages\tests\client_test_output_20220725_222837.txt
 .
 ----------------------------------------------------------------------
 Ran 7 tests in 0.026s
