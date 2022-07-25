@@ -22,6 +22,10 @@
       - [Example Client Usage](#example-client-usage)
     - [Key Features](#key-features)
       - [Encryption](#encryption)
+        - [Encrypt](#encrypt)
+        - [Decrypt](#decrypt)
+        - [Keygen](#keygen)
+        - [Load Keys](#load-keys)
       - [Input Validation](#input-validation)
         - [Network Configuration](#network-configuration)
         - [User Configuration Input](#user-configuration-input)
@@ -151,7 +155,9 @@ Connection closed.
 
 #### Encryption
 
-**Encrypt**
+The encryption module contains the following features:
+
+##### Encrypt
 
 The `encrypt` function is located within the `encryption` module.
 It uses the encryption function within the `rsa` package.
@@ -173,7 +179,7 @@ def encrypt(message: str, public_key: rsa.PublicKey) -> bytes:
     return rsa.encrypt(message.encode('utf8'), public_key)
 ```
 
-**Decrypt**
+##### Decrypt
 
 The `decrypt` function is located within the `encryption` module.
 It uses the decryption function within the `rsa` package.
@@ -195,7 +201,7 @@ def decrypt(data_bytes: bytes, private_key: rsa.PrivateKey) -> str:
     return rsa.decrypt(data_bytes, private_key)
 ```
 
-**Keygen**
+##### Keygen
 
 The `encryption` module also contains the following functions relating to generating and saving encryption keys:-
 
@@ -236,7 +242,7 @@ def save_keys(public_key: rsa.PublicKey,
         file.write(rsa.PrivateKey.save_pkcs1(private_key, format='PEM'))
 ```
 
-**Load Keys**
+##### Load Keys
 
 The `encryption` module also contains the following functions relating to loading encryption keys:-
 
