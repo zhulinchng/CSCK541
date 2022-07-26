@@ -1,6 +1,7 @@
 """Functions to encrypt and decrypt messages with a public and private key."""
 import rsa
 
+
 def encrypt(message: str, public_key: rsa.PublicKey) -> bytes:
     """
     Encrypt a message with a public key.
@@ -14,6 +15,7 @@ def encrypt(message: str, public_key: rsa.PublicKey) -> bytes:
     """
     return rsa.encrypt(message.encode('utf8'), public_key)
 
+
 def decrypt(data_bytes: bytes, private_key: rsa.PrivateKey) -> str:
     """
     Decrypt a message with a private key.
@@ -21,11 +23,12 @@ def decrypt(data_bytes: bytes, private_key: rsa.PrivateKey) -> str:
     The RSA module only operates on bytes, and not on strings.
     So string is required to be decoded.
 
-    :param msg: The message to decrypt.
+    :param data_bytes: The message in bytes to decrypt.
     :param private_key: The private key to decrypt with.
     :return: The decrypted message.
     """
     return rsa.decrypt(data_bytes, private_key)
+
 
 if __name__ == "__main__":
     TEST = "Hello World!"

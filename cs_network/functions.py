@@ -16,6 +16,7 @@ import rsa
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
 from encryption import EXAMPLE_PUB_KEY, load_pub_key
 
+
 def dict_to_xml_string(dict_val: dict, root_tag: str = 'root') -> str:
     """
     Convert a dictionary to an XML string.
@@ -95,7 +96,12 @@ def network_config(retry: int = 3, default_port: int = 50541) -> tuple:
             break
         except socket.gaierror:
             print("Invalid hostname.\nEnter a valid IPv4 hostname.")
+            host = None
             continue
+
+    if host is None:
+        print("Invalid host. Exiting.")
+        sys.exit(1)
 
     for _ in range(retry):
         try:
@@ -110,12 +116,17 @@ def network_config(retry: int = 3, default_port: int = 50541) -> tuple:
             return host, port
         except ValueError:
             print("Invalid port.\nEnter a valid port.")
+            port = None
             continue
+
+    if port is None:
+        print("Invalid port. Exiting.")
+        sys.exit(1)
 
 
 def validation(config_input: str, input_tup: tuple, err_msg: str = "Invalid input") -> bool:
     """
-    Validate the input.
+    Validate the integer input.
 
     :param config_input: The input to validate.
     :param input_tup: The valid input range.
@@ -155,6 +166,13 @@ def data_config(retry: int = 3,
         if validation(config['type'], valid_range, error_message + str(valid_range)):
             config['type'] = int(config['type'])
             break
+        else:
+            config['type'] = None
+            continue
+
+    if config['type'] is None:
+        print("Invalid type. Exiting.")
+        sys.exit(1)
 
     if config['type'] == 2:
         for _ in range(retry):
@@ -186,8 +204,10 @@ def data_config(retry: int = 3,
                 break
             except FileNotFoundError:
                 print("Invalid folder path.\nEnter a valid folder path.")
+                config['txtfilepath'] = None
                 continue
             except ValueError:
+                config['txtfilepath'] = None
                 continue
     else:
         config['txtfilepath'] = None
@@ -198,6 +218,13 @@ def data_config(retry: int = 3,
         if validation(config['encrypt'], valid_range, error_message + str(valid_range)):
             config['encrypt'] = int(config['encrypt'])
             break
+        else:
+            config['encrypt'] = None
+            continue
+
+    if config['encrypt'] is None:
+        print("Invalid encrypt option. Exiting.")
+        sys.exit(1)
 
     if config['encrypt'] == 1:
         for _ in range(retry):
@@ -217,9 +244,14 @@ def data_config(retry: int = 3,
                 raise FileNotFoundError
             except FileNotFoundError:
                 print("Public key .pem file not found.\nEnter a valid file path.")
+                config['public_key'] = None
                 continue
     else:
         config['public_key'] = None
+
+    if config['encrypt'] == 1 and config['public_key'] is None:
+        print("Invalid public key. Exiting.")
+        sys.exit(1)
 
     if config['type'] == 1 and config['encrypt'] == 2:
         for _ in range(retry):
@@ -229,11 +261,18 @@ def data_config(retry: int = 3,
             if validation(config['serialize'], valid_range, error_message + str(valid_range)):
                 config['serialize'] = int(config['serialize'])
                 break
+            else:
+                config['serialize'] = None
+                continue
     elif config['type'] == 1 and config['encrypt'] == 1:
         print("Serialization method will default to binary for encrypted dictionary.")
         config['serialize'] = 1
     else:
         config['serialize'] = None
+
+    if config['type'] == 1 and config['encrypt'] == 2 and config['serialize'] is None:
+        print("Invalid serialization method. Exiting.")
+        sys.exit(1)
 
     return config
 
@@ -243,7 +282,6 @@ def server_config(retry: int = 3) -> dict:
     Get the server's configuration data.
 
     :retry: The number of times to retry the input.
-    :output_filelength: The length of the output file name.
     :return: The server's configuration data.
     """
     serv_config = {}
@@ -259,6 +297,13 @@ def server_config(retry: int = 3) -> dict:
         if validation(serv_config['output_method'], valid_range, error_message + str(valid_range)):
             serv_config['output_method'] = int(serv_config['output_method'])
             break
+        else:
+            serv_config['output_method'] = None
+            continue
+
+    if serv_config['output_method'] is None:
+        serv_config['output_method'] = 2
+        print("No output method selected, default to using console output.")
 
     if serv_config['output_method'] == 1:
         for _ in range(retry):
@@ -291,23 +336,37 @@ def server_config(retry: int = 3) -> dict:
                 break
             except FileNotFoundError:
                 print("Invalid folder path.\nEnter a valid folder path.")
+                serv_config['filepath'] = None
                 continue
             except ValueError:
+                serv_config['filepath'] = None
                 continue
     else:
         serv_config['filepath'] = None
 
+    if serv_config['output_method'] == 1 and serv_config['filepath'] is None:
+        print("Invalid folder path. Exiting.")
+        sys.exit(1)
+
     return serv_config
 
 
-def data_input(config_dict: dict, max_bytes: int = 1024, retry: int = 3) -> Union[str, dict]:
+def data_input(config_dict: dict, max_bytes: int = 1024) -> Union[str, dict]:
     """
     Get the user's data.
 
     :config_dict: The user's configuration data.
+    :max_bytes: The maximum number of bytes to send.
     :return: The user's data.
     """
     def size_check(data: Union[str, dict], serial_method: int = config_dict['serialize']) -> bool:
+        """
+        Check if the data is too large to send.
+        
+        :data: The data to check.
+        :serial_method: The serialization method.
+        :return: False if the data is too large and return the size difference, return True and the size otherwise.
+        """
         if serial_method == 1:
             size = len(pickle.dumps(data))
         elif serial_method == 2:
@@ -324,7 +383,8 @@ def data_input(config_dict: dict, max_bytes: int = 1024, retry: int = 3) -> Unio
     print("------------Enter data------------")
     print("Maximum data size: " + str(max_bytes) + " bytes")
     if config_dict['type'] == 2:
-        for _ in range(retry):
+        data = ''
+        while size_check(data)[0]:
             print("Enter the text data:")
             data = input("Enter the text: ").strip()
             if size_check(data)[0]:
@@ -337,7 +397,7 @@ def data_input(config_dict: dict, max_bytes: int = 1024, retry: int = 3) -> Unio
     print("Enter the dictionary:\n")
     print("---Tip: The value can be another dictionary---\n")
     print(
-"If entered using the correct python syntax, the value will be evaluated as a nested dictionary,\
+        "If entered using the correct python syntax, the value will be evaluated as a nested dictionary,\
  otherwise it will be string.\n")
     while True:
         scheck, size = size_check(data)
@@ -363,7 +423,10 @@ def data_input(config_dict: dict, max_bytes: int = 1024, retry: int = 3) -> Unio
                         print("Invalid value for XML.")
                         continue
                 if validate_xml_value(xvalue):
-                    data[key] = xvalue
+                    if isinstance(xvalue, dict):
+                        data[key] = xvalue
+                    else:
+                        data[key] = dvalue
                     scheck, size = size_check(data)
                     print(f'Dictionary: {data} \nSize: {size} bytes')
                     continue
@@ -374,7 +437,7 @@ def data_input(config_dict: dict, max_bytes: int = 1024, retry: int = 3) -> Unio
                 data[key] = xvalue
             else:
                 data[key] = dvalue
-        except (ValueError, SyntaxError):
+        except (ValueError, SyntaxError, TypeError):
             if config_dict['serialize'] == 3:
                 if validate_xml_value(dvalue):
                     data[key] = dvalue
@@ -409,7 +472,7 @@ def continue_input() -> int:
     """
     Continue input.
 
-    :return: True if the user wants to continue, False otherwise.
+    :return: returns the state of the continue input.
     """
     while True:
         answer = input("Do you want to continue? (y/n): ")

@@ -5,13 +5,14 @@ import sys
 import pickle
 import time
 import base64
-import rsa
 from typing import Union
 from os.path import dirname, join, abspath
+import rsa
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
-from encryption import encrypt, EXAMPLE_PUB_KEY
-from cs_network import data_config, network_config, data_input
 from cs_network import validate_empty_value, continue_input, dict_to_xml_string
+from cs_network import data_config, network_config, data_input
+from encryption import encrypt, EXAMPLE_PUB_KEY
+
 
 def initialize_client(host: str, port: int) -> socket.socket:
     """
@@ -46,6 +47,7 @@ def input_data(configuration_dict: dict,
     :param start_from: The starting point of the data.
     :param retry: The number of times to retry the input.
     :param max_bytes: The maximum number of bytes for data.
+    :param example_p_key: The example public key.
     :return: The tuple of dictionaries.
     """
     if start_from <= 1:
@@ -58,8 +60,7 @@ def input_data(configuration_dict: dict,
     if start_from <= 2:
         data_dictionary = data_input(
             config_dict=configuration_dict,
-            max_bytes=max_bytes,
-            retry=retry)
+            max_bytes=max_bytes)
 
     return configuration_dict, data_dictionary
 
@@ -85,10 +86,14 @@ def process_data(config_dict: dict, data: Union[str, dict]) -> tuple:
         textdata = data
 
     if output_dict['type'] == 2:
-        with open(f"{output_dict['txtfilepath']}_{time_txt}.txt", 'w', encoding='utf-8') as file:
-            file.write(str(textdata))
-            print(
-                f"Data written successfully to {output_dict.pop('txtfilepath')}_{time_txt}.txt")
+        if output_dict['txtfilepath'] is None:
+            print("Invalid file path specified. File will not be saved.")
+        else:
+            with open(f"{output_dict['txtfilepath']}_{time_txt}.txt", 'w',
+                      encoding='utf-8') as file:
+                file.write(str(textdata))
+                print(
+                    f"Data written successfully to {output_dict.pop('txtfilepath')}_{time_txt}.txt")
         if output_dict['encrypt'] == 2:
             output_dict['data'] = textdata.encode('utf-8')
 
@@ -112,6 +117,8 @@ def wait_for_response(sock: socket.socket, timeout: int = 100, socksize: int = 1
     Wait for the response.
 
     :param sock: The client socket.
+    :param timeout: The timeout.
+    :param socksize: The socket size.
     :return: The response.
     """
     sock.settimeout(timeout)
@@ -133,6 +140,7 @@ def send_with_retry(sock: socket.socket,
     :param bytes_to_send: The data to send.
     :param sock: The client socket.
     :param retry: The number of times to retry the send.
+    :param sleep: The number of seconds to sleep between retries.
     :return: None.
     """
     for i in range(retry):
@@ -146,7 +154,7 @@ def send_with_retry(sock: socket.socket,
             time.sleep(sleep)
 
 
-def start_client(timeout: int = 600) -> None:
+def start_client(timeout: Union[int, None] = None) -> None:
     """
     Main function.
 
@@ -157,12 +165,12 @@ def start_client(timeout: int = 600) -> None:
     host, port = network_config()
     # connect to the server
     sock = initialize_client(host, port)
-    sock.settimeout(timeout) # set timeout
+    sock.settimeout(timeout)  # set timeout
     start = 1
     config = {}
     data_dict = {}
     while start > 0:
-        print("---------Input Config and Data---------")
+        print("---------Connection Initialized---------")
         if start == 1:
             config, data_dict = input_data(
                 config, data_dict, start_from=start, example_p_key=EXAMPLE_PUB_KEY)
