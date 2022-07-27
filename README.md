@@ -15,9 +15,11 @@
   - [Install](#install)
   - [Usage](#usage)
     - [Run the Server](#run-the-server)
+      - [start_server Function](#start_server-function)
       - [Server Features](#server-features)
       - [Example Server Usage](#example-server-usage)
     - [Run the Client](#run-the-client)
+      - [start_client Function](#start_client-function)
       - [Client Features](#client-features)
       - [Example Client Usage](#example-client-usage)
     - [Key Features](#key-features)
@@ -70,6 +72,14 @@ python
 >>> start_server()
 ```
 
+#### start_server Function
+
+```python
+def start_server(
+                 timeout: Union[int,None] = None # Timeout for the server (seconds), default is None
+                 ) -> None:                      # Return None
+```
+
 #### Server Features
 
 - Supports decryption of messages using RSA.
@@ -111,6 +121,14 @@ python
 ```python
 >>> from cs_network import start_client
 >>> start_server
+```
+
+#### start_client Function
+
+```python
+def start_client(
+                 timeout: Union[int,None] = None # Timeout for the client (seconds), default is None
+                 ) -> None:                      # Return None
 ```
 
 #### Client Features
