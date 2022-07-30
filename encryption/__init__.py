@@ -1,5 +1,5 @@
 """Package installation file for the encryption package."""
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 import rsa
 from .keygen import generate_keys, save_keys, load_priv_key, load_pub_key
 from .cipher import encrypt, decrypt

@@ -362,10 +362,11 @@ def data_input(config_dict: dict, max_bytes: int = 1024) -> Union[str, dict]:
     def size_check(data: Union[str, dict], serial_method: int = config_dict['serialize']) -> bool:
         """
         Check if the data is too large to send.
-        
+
         :data: The data to check.
-        :serial_method: The serialization method.
-        :return: False if the data is too large and return the size difference, return True and the size otherwise.
+        :serial_method: Serialization method.
+        :return: False if the data is too large and return the size difference,
+                 return True and the size otherwise.
         """
         if serial_method == 1:
             size = len(pickle.dumps(data))
@@ -397,7 +398,8 @@ def data_input(config_dict: dict, max_bytes: int = 1024) -> Union[str, dict]:
     print("Enter the dictionary:\n")
     print("---Tip: The value can be another dictionary---\n")
     print(
-        "If entered using the correct python syntax, the value will be evaluated as a nested dictionary,\
+        "If entered using the correct python syntax,\
+ the value will be evaluated as a nested dictionary,\
  otherwise it will be string.\n")
     while True:
         scheck, size = size_check(data)

@@ -1,5 +1,5 @@
 """Functions for the Client-Server Network Module."""
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 from .functions import data_config, network_config, data_input, validate_empty_value
 from .functions import continue_input, dict_to_xml_string, server_config
 from .client import initialize_client, input_data, process_data
