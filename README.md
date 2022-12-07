@@ -120,7 +120,7 @@ python
 
 ```python
 >>> from cs_network import start_client
->>> start_server
+>>> start_client
 ```
 
 #### start_client Function
